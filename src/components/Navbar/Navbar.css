@@ -1,0 +1,120 @@
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 1.5rem 0;
+    z-index: 1000;
+    transition: var(--transition-smooth);
+}
+
+.navbar.scrolled {
+    background: var(--glass-bg);
+    backdrop-filter: blur(15px);
+    padding: 1rem 0;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.nav-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    color: var(--color-accent);
+}
+
+.logo-img {
+    height: 120px;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.6));
+    /* Golden glow */
+    transition: var(--transition-smooth);
+}
+
+.logo-img:hover {
+    filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.9)) brightness(1.1);
+    transform: scale(1.05);
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+}
+
+.nav-links a {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    color: var(--color-primary);
+    position: relative;
+    text-transform: uppercase;
+}
+
+.nav-links a:not(.btn-book)::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background-color: var(--color-primary);
+    transition: var(--transition-smooth);
+}
+
+.nav-links a:hover::after {
+    width: 100%;
+}
+
+.btn-book {
+    background-color: var(--color-primary);
+    color: white !important;
+    padding: 0.9rem 2.2rem;
+    border-radius: 2px;
+    font-weight: 700 !important;
+    transition: var(--transition-smooth);
+}
+
+.btn-book:hover {
+    background-color: var(--color-primary-dark);
+}
+
+.admin-link {
+    opacity: 0.6;
+    font-size: 0.7rem !important;
+}
+
+.menu-btn {
+    display: none;
+    color: var(--color-accent);
+}
+
+@media (max-width: 992px) {
+    .menu-btn {
+        display: block;
+    }
+
+    .nav-links {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 80%;
+        height: 100vh;
+        background-color: white;
+        flex-direction: column;
+        justify-content: center;
+        transition: var(--transition-smooth);
+        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-links.open {
+        right: 0;
+    }
+}

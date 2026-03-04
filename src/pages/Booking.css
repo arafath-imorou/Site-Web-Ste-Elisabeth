@@ -1,0 +1,175 @@
+.booking-page {
+    background-color: var(--color-secondary);
+}
+
+.page-header {
+    height: 50vh;
+    background-image: url('https://images.unsplash.com/photo-1551882547-ff43c63efe5c?auto=format&fit=crop&w=1920&q=80');
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding-top: 80px;
+    color: white;
+}
+
+.page-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.page-header .container {
+    position: relative;
+    z-index: 10;
+}
+
+.steps-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.step-item {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #ccc;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.step-item.active {
+    color: var(--color-primary);
+}
+
+.step-line {
+    width: 30px;
+    height: 1px;
+    background-color: #eee;
+}
+
+.booking-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 3rem;
+}
+
+.booking-step h2 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+}
+
+.booking-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.select-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.select-wrapper .icon {
+    position: absolute;
+    left: 1rem;
+    color: #888;
+}
+
+.select-wrapper select {
+    width: 100%;
+    padding: 1rem 1rem 1rem 3rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+}
+
+.booking-step input {
+    width: 100%;
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.btn-group {
+    display: flex;
+    gap: 1rem;
+}
+
+.summary-box {
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.summary-item span {
+    font-size: 0.8rem;
+    color: #888;
+    text-transform: uppercase;
+}
+
+.summary-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--color-primary);
+}
+
+.summary-total strong {
+    font-size: 2.5rem;
+    color: var(--color-accent);
+}
+
+.payment-notice {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: #2e7d32;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 3rem;
+}
+
+.help-box {
+    padding: 2rem;
+}
+
+.help-box h4 {
+    margin-bottom: 1rem;
+}
+
+.help-box p {
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.6;
+}
+
+@media (max-width: 992px) {
+    .booking-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .booking-form-grid {
+        grid-template-columns: 1fr;
+    }
+}

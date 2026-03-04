@@ -1,0 +1,140 @@
+.footer {
+    background-color: var(--color-accent);
+    color: white;
+    padding: var(--spacing-xl) 0 2rem;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.5fr;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.footer-logo-img {
+    height: 150px;
+    width: auto;
+    object-fit: contain;
+    margin-bottom: var(--spacing-sm);
+    filter: brightness(0) invert(1) drop-shadow(0 0 15px rgba(255, 255, 255, 0.4));
+    transition: var(--transition-smooth);
+}
+
+.footer-logo-img:hover {
+    filter: brightness(0) invert(1) drop-shadow(0 0 25px rgba(255, 255, 255, 0.6));
+    transform: scale(1.03);
+}
+
+.footer-info p {
+    opacity: 0.7;
+    max-width: 300px;
+    margin-bottom: var(--spacing-md);
+}
+
+.social-links {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.social-links a {
+    color: white;
+    opacity: 0.7;
+}
+
+.social-links a:hover {
+    color: var(--color-primary);
+    opacity: 1;
+}
+
+.footer-links h4,
+.footer-contact h4 {
+    font-size: 0.9rem;
+    letter-spacing: 1.5px;
+    margin-bottom: var(--spacing-md);
+    color: var(--color-primary);
+}
+
+.footer-links ul {
+    list-style: none;
+}
+
+.footer-links li {
+    margin-bottom: 0.8rem;
+}
+
+.footer-links a {
+    opacity: 0.7;
+    font-size: 0.9rem;
+}
+
+.footer-links a:hover {
+    opacity: 1;
+    padding-left: 5px;
+}
+
+.footer-contact .contact-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 0.8rem;
+    font-size: 0.9rem;
+}
+
+.footer-contact .contact-item>span,
+.footer-contact .contact-item>svg {
+    opacity: 0.7;
+}
+
+.site-footer-info .contact-item a {
+    color: #ffd700;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.phone-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.secondary-contact {
+    margin-top: 4px;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.footer-whatsapp-link {
+    display: inline-block;
+    color: #25D366;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    opacity: 0.9;
+}
+
+.footer-whatsapp-link:hover {
+    color: #1ebe57;
+    opacity: 1;
+    transform: translateX(4px);
+}
+
+.site-footer-info h5 {
+    font-size: 0.85rem;
+    color: var(--color-primary);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+}
+
+.footer-bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 2rem;
+    text-align: center;
+    font-size: 0.8rem;
+    opacity: 0.5;
+}
+
+@media (max-width: 768px) {
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+}

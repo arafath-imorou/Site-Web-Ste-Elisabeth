@@ -1,0 +1,388 @@
+.services-page {
+    background-color: var(--color-secondary);
+}
+
+.page-header.narrow {
+    height: 35vh;
+}
+
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+.services-page .page-header {
+    background-image: url('../assets/ouidah_monument_benin.png');
+}
+
+.page-header {
+    height: 50vh;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding-top: 80px;
+    color: white;
+}
+
+.page-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.page-header .container {
+    position: relative;
+    z-index: 10;
+}
+
+.service-card {
+    background: white;
+    padding: 3rem 2rem;
+    border-radius: 4px;
+    text-align: center;
+    border: 1px solid #f0f0f0;
+    transition: var(--transition-smooth);
+}
+
+.service-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.05);
+    border-color: var(--color-primary-light);
+}
+
+.service-icon {
+    color: var(--color-primary);
+    margin-bottom: 1.5rem;
+    display: inline-flex;
+    padding: 1rem;
+    background-color: var(--color-primary-light);
+    border-radius: 50%;
+}
+
+.service-card h3 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.service-card p {
+    color: #777;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+/* EVENTS */
+.events-special {
+    margin-top: var(--spacing-lg);
+}
+
+.events-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.events-text {
+    padding: 4rem;
+}
+
+.events-text h2 {
+    font-size: 2.5rem;
+    margin: 1rem 0 1.5rem;
+}
+
+.events-text p {
+    color: #666;
+    margin-bottom: 2.5rem;
+}
+
+.event-stats {
+    display: flex;
+    gap: 3rem;
+    margin-bottom: 3rem;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat strong {
+    font-size: 1.8rem;
+    font-family: var(--font-serif);
+    color: var(--color-primary);
+}
+
+.stat span {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+}
+
+.events-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+@media (max-width: 992px) {
+    .events-content {
+        grid-template-columns: 1fr;
+    }
+
+    .events-image {
+        height: 300px;
+        order: -1;
+    }
+
+    .events-text {
+        padding: 3rem 2rem;
+    }
+}
+
+/* ==========================================================================
+   RESTAURANT MENU STYLES
+   ========================================================================== */
+
+.menu-container {
+    background: linear-gradient(135deg, #111522 0%, #050811 100%);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 3rem 4rem;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+    position: relative;
+    overflow: hidden;
+}
+
+.menu-container::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 15px;
+    background: linear-gradient(90deg, #ff9800 0%, #ff5722 50%, #ffeb3b 100%);
+}
+
+.menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 2rem;
+}
+
+.menu-logo {
+    height: 60px;
+    object-fit: contain;
+}
+
+.menu-title-wrapper {
+    text-align: right;
+}
+
+.menu-gallery-preview {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 1.5rem;
+    overflow-x: auto;
+    padding-bottom: 1.5rem;
+    margin-bottom: 3rem;
+    border-bottom: 1px dashed rgba(255, 152, 0, 0.3);
+    /* Custom Scrollbar for gallery */
+    scrollbar-width: thin;
+    scrollbar-color: #ff9800 rgba(255, 255, 255, 0.05);
+}
+
+.menu-gallery-preview::-webkit-scrollbar {
+    height: 6px;
+}
+
+.menu-gallery-preview::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.menu-gallery-preview::-webkit-scrollbar-thumb {
+    background: #ff9800;
+    border-radius: 4px;
+}
+
+.plat-img {
+    height: 200px;
+    min-width: 280px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 2px solid rgba(255, 152, 0, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    cursor: pointer;
+}
+
+.plat-img:hover {
+    transform: scale(1.05) translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    border-color: #ff9800;
+}
+
+.menu-main-title {
+    font-size: 3.5rem;
+    color: #ff9800;
+    margin: 0;
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.menu-subtitle {
+    font-size: 0.9rem;
+    color: #aaa;
+    line-height: 1.4;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.menu-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+}
+
+.left-col {
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    padding-right: 4rem;
+}
+
+.category-title {
+    font-size: 1.4rem;
+    font-style: italic;
+    color: #ff9800;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    font-family: 'Georgia', serif;
+}
+
+.menu-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.menu-item {
+    display: flex;
+    align-items: baseline;
+    font-size: 1.05rem;
+}
+
+.menu-item .name {
+    color: #e0e0e0;
+    white-space: nowrap;
+}
+
+.menu-item .dots {
+    flex-grow: 1;
+    border-bottom: 2px dotted rgba(255, 255, 255, 0.2);
+    margin: 0 10px;
+    position: relative;
+    top: -4px;
+}
+
+.menu-item .price {
+    color: #8c9eff;
+    font-weight: 700;
+    background: rgba(140, 158, 255, 0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.mt-2 {
+    margin-top: 0.8rem;
+}
+
+.mt-4 {
+    margin-top: 2rem;
+}
+
+.mt-lg {
+    margin-top: 4.5rem;
+}
+
+.menu-footer {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.delivery-info {
+    text-align: right;
+}
+
+.delivery-info h4 {
+    color: #ff9800;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.delivery-info .contacts {
+    display: flex;
+    gap: 1.5rem;
+    color: #ccc;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 1024px) {
+    .menu-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .left-col {
+        border-right: none;
+        padding-right: 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 2rem;
+    }
+
+    .mt-lg {
+        margin-top: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .menu-container {
+        padding: 2rem;
+    }
+
+    .menu-header {
+        flex-direction: column;
+        gap: 1.5rem;
+        text-align: center;
+    }
+
+    .menu-title-wrapper {
+        text-align: center;
+    }
+
+    .delivery-info {
+        text-align: center;
+        width: 100%;
+    }
+
+    .delivery-info .contacts {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}

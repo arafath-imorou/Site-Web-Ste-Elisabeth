@@ -1,0 +1,371 @@
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
+import { Calendar, Users, Home, CreditCard, CheckCircle, ChevronRight, MapPin } from 'lucide-react';
+import { SITES } from '../constants/sites';
+import { MOCK_ROOMS } from '../data/mockRooms';
+import './Booking.css';
+
+const Booking = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const queryParams = new URLSearchParams(location.search);
+    const initialRoomId = queryParams.get('room');
+
+    const [step, setStep] = useState(1);
+    const [rooms, setRooms] = useState([]);
+    const [filteredRooms, setFilteredRooms] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [bookingData, setBookingData] = useState({
+        room_id: initialRoomId || '',
+        site: SITES.ABOMEY_CALAVI,
+        check_in: '',
+        check_out: '',
+        guests_count: 2,
+        customer_name: '',
+        customer_email: '',
+        customer_phone: '',
+        event_type: '',
+        special_requests: '',
+        total_price: 0
+    });
+
+    const selectedRoomDetails = filteredRooms.find(r => r.id === bookingData.room_id);
+    const isConference = selectedRoomDetails?.name?.toLowerCase().includes('conférence');
+
+    useEffect(() => {
+        fetchRooms();
+    }, []);
+
+    useEffect(() => {
+        if (rooms.length > 0) {
+            // Filtrer par site et étendre les options de climatisation si nécessaire
+            const filtered = [];
+            rooms.forEach(room => {
+                if (room.site === bookingData.site) {
+                    if (room.prices) {
+                        // Si la chambre a plusieurs tarifs (Abomey-Calavi), on crée des options distinctes
+                        if (room.prices.ventillee) {
+                            filtered.push({
+                                ...room,
+                                id: `${room.id}-ventillee`,
+                                name: `${room.name} (Ventillée)`,
+                                price_per_night: room.prices.ventillee
+                            });
+                        }
+                        if (room.prices.climee) {
+                            filtered.push({
+                                ...room,
+                                id: `${room.id}-climee`,
+                                name: `${room.name} (Climée)`,
+                                price_per_night: room.prices.climee
+                            });
+                        }
+                    } else {
+                        filtered.push(room);
+                    }
+                }
+            });
+
+            setFilteredRooms(filtered);
+
+            // Si la chambre sélectionnée n'est pas dans le nouveau site, on la réinitialise
+            if (bookingData.room_id && !filtered.find(r => r.id === bookingData.room_id)) {
+                setBookingData(prev => ({ ...prev, room_id: '', total_price: 0 }));
+            }
+        }
+    }, [bookingData.site, rooms]);
+
+    const fetchRooms = async () => {
+        setLoading(true);
+        try {
+            const { data, error } = await supabase.from('rooms').select('*').eq('is_available', true);
+
+            if (error || !data || data.length === 0) {
+                console.log('Using mock data for booking page');
+                setRooms(MOCK_ROOMS);
+            } else {
+                setRooms(data);
+            }
+        } catch (err) {
+            console.error('Error fetching rooms for booking, using mock data:', err);
+            setRooms(MOCK_ROOMS);
+        } finally {
+            if (initialRoomId) {
+                // Note: initialRoomId might be a real DB UUID or a mock ID string
+                // We'll search in both real data and mock data (which is now in 'rooms' state)
+                const initialRoom = MOCK_ROOMS.find(r => r.id === initialRoomId) || []; // Fallback logic
+                // If it's a mock room with prices, we default to ventillee if possible for the initial selection
+                setBookingData(prev => ({ ...prev, room_id: initialRoomId }));
+            }
+            setLoading(false);
+        }
+    };
+
+    const calculateTotalPrice = (roomId, inDate, outDate) => {
+        if (!roomId || !inDate || !outDate) return 0;
+        const room = filteredRooms.find(r => r.id === roomId);
+        if (!room) return 0;
+
+        const start = new Date(inDate);
+        const end = new Date(outDate);
+        const diffDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+
+        const isRoomConf = room.name?.toLowerCase().includes('conférence') || room.name?.toLowerCase().includes('fête');
+
+        if (isRoomConf) {
+            const days = diffDays >= 0 ? diffDays + 1 : 0;
+            return days * room.price_per_night;
+        } else {
+            const nights = diffDays > 0 ? diffDays : 0;
+            return nights * room.price_per_night;
+        }
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        const newData = { ...bookingData, [name]: value };
+
+        if (name === 'room_id' || name === 'check_in' || name === 'check_out' || name === 'site') {
+            const currentRoomId = name === 'room_id' ? value : bookingData.room_id;
+            const currentCheckIn = name === 'check_in' ? value : bookingData.check_in;
+            const currentCheckOut = name === 'check_out' ? value : bookingData.check_out;
+
+            newData.total_price = calculateTotalPrice(currentRoomId, currentCheckIn, currentCheckOut);
+        }
+        setBookingData(newData);
+    };
+
+    const handleNext = () => setStep(step + 1);
+    const handleBack = () => setStep(step - 1);
+
+    const handleSubmit = async () => {
+        setLoading(true);
+        try {
+            const finalNotes = isConference
+                ? `Type d'événement: ${bookingData.event_type} | Demandes spécifiques: ${bookingData.special_requests}`
+                : '';
+
+            const submitData = {
+                site: bookingData.site,
+                check_in: bookingData.check_in,
+                check_out: bookingData.check_out,
+                guests_count: bookingData.guests_count,
+                customer_name: bookingData.customer_name,
+                customer_email: bookingData.customer_email,
+                customer_phone: bookingData.customer_phone,
+                total_price: bookingData.total_price,
+                notes: finalNotes,
+                room_id: bookingData.room_id.replace('-ventillee', '').replace('-climee', '')
+            };
+            const { error } = await supabase.from('reservations').insert([submitData]);
+            if (error) throw error;
+            setStep(4);
+        } catch (err) {
+            alert('Erreur: ' + err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading && step !== 4) return <div className="container section">Chargement...</div>;
+
+    return (
+        <div className="booking-page">
+            <section className="page-header narrow">
+                <div className="container">
+                    <h1>Réservation</h1>
+                    <div className="steps-indicator">
+                        <div className={`step-item ${step >= 1 ? 'active' : ''}`}>1. Sélection</div>
+                        <div className="step-line"></div>
+                        <div className={`step-item ${step >= 2 ? 'active' : ''}`}>2. Détails</div>
+                        <div className="step-line"></div>
+                        <div className={`step-item ${step >= 3 ? 'active' : ''}`}>3. Confirmation</div>
+                    </div>
+                </div>
+            </section>
+
+            <div className="container section">
+                <div className="booking-layout">
+                    <div className="booking-main">
+                        {step === 1 && (
+                            <div className="booking-step animate-up">
+                                <h2>{isConference ? "Détails de l'événement" : "Sélectionnez votre séjour"}</h2>
+                                <div className="booking-form-grid">
+                                    <div className="form-group">
+                                        <label>Choisir le site</label>
+                                        <div className="select-wrapper">
+                                            <MapPin size={18} className="icon" />
+                                            <select name="site" value={bookingData.site} onChange={handleInputChange}>
+                                                {Object.values(SITES).map(site => (
+                                                    <option key={site} value={site}>{site}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Choisir une chambre</label>
+                                        <div className="select-wrapper">
+                                            <Home side={18} className="icon" />
+                                            <select name="room_id" value={bookingData.room_id} onChange={handleInputChange}>
+                                                <option value="">Sélectionnez une suite...</option>
+                                                {filteredRooms.map(room => {
+                                                    const isConfOption = room.name?.toLowerCase().includes('conférence') || room.name?.toLowerCase().includes('fête');
+                                                    return (
+                                                        <option key={room.id} value={room.id}>
+                                                            {room.name} ({room.price_per_night} FCFA/{isConfOption ? 'Jour' : 'nuit'})
+                                                        </option>
+                                                    );
+                                                })}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>{isConference ? "Date de début" : "Date d'arrivée"}</label>
+                                        <input type="date" name="check_in" value={bookingData.check_in} onChange={handleInputChange} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>{isConference ? "Date de fin" : "Date de départ"}</label>
+                                        <input type="date" name="check_out" value={bookingData.check_out} onChange={handleInputChange} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>{isConference ? "Nombre de participants" : "Nombre de personnes"}</label>
+                                        <select name="guests_count" value={bookingData.guests_count} onChange={handleInputChange}>
+                                            {isConference ? (
+                                                <>
+                                                    <option value={10}>Jusqu'à 10 Personnes</option>
+                                                    <option value={20}>Jusqu'à 20 Personnes</option>
+                                                    <option value={50}>Jusqu'à 50 Personnes</option>
+                                                    <option value={100}>Jusqu'à 100 Personnes</option>
+                                                    <option value={150}>Plus de 100 Personnes</option>
+                                                </>
+                                            ) : (
+                                                [1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n} Personne{n > 1 ? 's' : ''}</option>)
+                                            )}
+                                        </select>
+                                    </div>
+                                </div>
+                                <button
+                                    className="btn-primary"
+                                    disabled={!bookingData.room_id || !bookingData.check_in || !bookingData.check_out}
+                                    onClick={handleNext}
+                                >
+                                    CONTINUER <ChevronRight size={18} />
+                                </button>
+                            </div>
+                        )}
+
+                        {step === 2 && (
+                            <div className="booking-step animate-up">
+                                <h2>Vos coordonnées</h2>
+                                <div className="booking-form-grid">
+                                    <div className="form-group">
+                                        <label>Nom complet {isConference && "(ou nom de l'entreprise)"}</label>
+                                        <input type="text" name="customer_name" value={bookingData.customer_name} onChange={handleInputChange} placeholder="Jean Dupont" />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Email</label>
+                                        <input type="email" name="customer_email" value={bookingData.customer_email} onChange={handleInputChange} placeholder="jean.dupont@email.com" />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Téléphone</label>
+                                        <input type="tel" name="customer_phone" value={bookingData.customer_phone} onChange={handleInputChange} placeholder="+229 00 00 00 00" />
+                                    </div>
+                                    {isConference && (
+                                        <>
+                                            <div className="form-group">
+                                                <label>Type d'événement</label>
+                                                <select name="event_type" value={bookingData.event_type} onChange={handleInputChange}>
+                                                    <option value="">Sélectionnez...</option>
+                                                    <option value="Reunion">Réunion / Séminaire</option>
+                                                    <option value="Formation">Formation / Atelier</option>
+                                                    <option value="Mariage">Mariage / Réception</option>
+                                                    <option value="Autre">Autre événement</option>
+                                                </select>
+                                            </div>
+                                            <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                                                <label>Demandes spécifiques (Traiteur, vidéoprojecteur, etc.)</label>
+                                                <textarea
+                                                    name="special_requests"
+                                                    value={bookingData.special_requests}
+                                                    onChange={handleInputChange}
+                                                    placeholder="Précisez vos besoins pour l'événement..."
+                                                    style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', color: 'white', minHeight: '80px' }}
+                                                />
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                                <div className="btn-group">
+                                    <button className="btn-outline" onClick={handleBack}>RETOUR</button>
+                                    <button className="btn-primary" disabled={!bookingData.customer_name || !bookingData.customer_email} onClick={handleNext}>
+                                        RÉCAPITULATIF <ChevronRight size={18} />
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {step === 3 && (
+                            <div className="booking-step animate-up">
+                                <h2>Confirmation</h2>
+                                <div className="summary-box glass-box">
+                                    <div className="summary-item">
+                                        <span>Site</span>
+                                        <strong>{bookingData.site}</strong>
+                                    </div>
+                                    <div className="summary-item">
+                                        <span>{isConference ? "Espace" : "Hébergement"}</span>
+                                        <strong>{rooms.find(r => r.id === bookingData.room_id)?.name}</strong>
+                                    </div>
+                                    <div className="summary-item">
+                                        <span>{isConference ? "Date de l'événement" : "Séjour"}</span>
+                                        <strong>Du {bookingData.check_in} au {bookingData.check_out}</strong>
+                                    </div>
+                                    <div className="summary-item">
+                                        <span>{isConference ? "Participants" : "Invités"}</span>
+                                        <strong>{bookingData.guests_count} Personnes</strong>
+                                    </div>
+                                    {isConference && bookingData.event_type && (
+                                        <div className="summary-item">
+                                            <span>Type</span>
+                                            <strong>{bookingData.event_type}</strong>
+                                        </div>
+                                    )}
+                                    <div className="summary-total">
+                                        <span>TOTAL À RÉGLER</span>
+                                        <strong>{bookingData.total_price} FCFA</strong>
+                                    </div>
+                                </div>
+                                <div className="payment-notice">
+                                    <CreditCard size={20} /> Paiement sécurisé à l'arrivée
+                                </div>
+                                <div className="btn-group">
+                                    <button className="btn-outline" onClick={handleBack}>RETOUR</button>
+                                    <button className="btn-primary" onClick={handleSubmit}>CONFIRMER LA RÉSERVATION</button>
+                                </div>
+                            </div>
+                        )}
+
+                        {step === 4 && (
+                            <div className="success-message glass-box animate-up">
+                                <CheckCircle size={64} className="success-icon" />
+                                <h2>Réservation Confirmée !</h2>
+                                <p>Votre séjour a été enregistré avec succès. Un email de confirmation vous sera envoyé prochainement.</p>
+                                <button className="btn-primary" onClick={() => navigate('/')}>RETOUR À L'ACCUEIL</button>
+                            </div>
+                        )}
+                    </div>
+
+                    <aside className="booking-sidebar">
+                        <div className="help-box card">
+                            <h4>Besoin d'aide ?</h4>
+                            <p>Contactez notre service client 24h/24 ou par email.</p>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default Booking;
