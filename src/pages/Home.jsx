@@ -5,35 +5,10 @@ import { MOCK_ROOMS } from '../data/mockRooms';
 import { formatPrice } from '../lib/formatUtils';
 import './Home.css';
 
+const RoomsPreview = React.lazy(() => import('../components/Home/RoomsPreview'));
+const Features = React.lazy(() => import('../components/Home/Features'));
+
 const Home = () => {
-    const [rooms, setRooms] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        fetchRooms();
-    }, []);
-
-    const fetchRooms = async () => {
-        try {
-            const { data, error } = await supabase
-                .from('rooms')
-                .select(`*, room_images(*)`)
-                .limit(3);
-
-            if (error || !data || data.length === 0) {
-                console.log('Using mock data for home page');
-                setRooms(MOCK_ROOMS.slice(0, 3));
-            } else {
-                setRooms(data);
-            }
-        } catch (err) {
-            console.error('Error fetching rooms:', err);
-            setRooms(MOCK_ROOMS.slice(0, 3));
-        } finally {
-            setLoading(false);
-        }
-    };
-
     return (
         <div className="home-page">
             {/* HERO SECTION */}
@@ -110,103 +85,10 @@ const Home = () => {
                 </div>
             </div>
 
-            {/* ROOMS PREVIEW */}
-            <section className="section rooms-preview">
-                <div className="container">
-                    <div className="section-header">
-                        <span className="subtitle">HÉBERGEMENT</span>
-                        <h2>Chambres & Pavillons de Charme</h2>
-                        <div className="header-line"></div>
-                    </div>
-
-                    <div className="rooms-grid">
-                        {loading ? (
-                            <p>Chargement des chambres...</p>
-                        ) : rooms.length > 0 ? (
-                            rooms.map((room) => (
-                                <div key={room.id} className="room-card animate-up">
-                                    <div className="room-image">
-                                        <img
-                                            src={room.image || room.room_images?.[0]?.url || 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=800&q=80'}
-                                            alt={room.name}
-                                            loading="lazy"
-                                            width="800"
-                                            height="500"
-                                        />
-                                        <div className="room-price">
-                                            {room.prices
-                                                ? `À partir de ${formatPrice(Math.min(...Object.values(room.prices)))} FCFA`
-                                                : `À partir de ${formatPrice(room.price_per_night)} FCFA`}
-                                        </div>
-                                    </div>
-                                    <div className="room-info">
-                                        <h3>{room.name}</h3>
-                                        <p>{room.description?.substring(0, 100)}...</p>
-                                        <ul className="room-amenities">
-                                            {room.amenities?.slice(0, 3).map((item, idx) => (
-                                                <li key={idx}>{item}</li>
-                                            ))}
-                                        </ul>
-                                        <a href={`/rooms/${room.id}`} className="view-more">
-                                            Détails de la chambre <ChevronRight size={16} />
-                                        </a>
-                                    </div>
-                                </div>
-                            ))
-                        ) : (
-                            <div className="room-card animate-up">
-                                <div className="room-image">
-                                    <img
-                                        src="/Images/7887fbb9-3d3a-4ddf-ab0a-be8af007d635.jpg"
-                                        alt="Exemple Chambre"
-                                        loading="lazy"
-                                        width="800"
-                                        height="500"
-                                    />
-                                    <div className="room-price">À partir de 250€</div>
-                                </div>
-                                <div className="room-info">
-                                    <h3>Chambre Prestige Jardin</h3>
-                                    <p>Un espace paisible entouré de verdure avec vue sur le jardin tropical.</p>
-                                    <ul className="room-amenities">
-                                        <li>Terrasse Privée</li>
-                                        <li>Vue Jardin</li>
-                                        <li>Confort Nature</li>
-                                    </ul>
-                                    <a href="/rooms" className="view-more">
-                                        Détails de la chambre <ChevronRight size={16} />
-                                    </a>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </section>
-
-            {/* FEATURES */}
-            <section className="section features glass-box">
-                <div className="container grid-2">
-                    <div className="feature-text animate-up">
-                        <span className="subtitle">L'EXPÉRIENCE</span>
-                        <h2>Pourquoi Venir Chez Nous ?</h2>
-                        <p>Notre établissement allie le charme de l'ancien au confort moderne, offrant à chaque client une parenthèse enchantée loin du tumulte quotidien.</p>
-                        <ul className="feature-list">
-                            <li><strong>Localisation Privilégiée</strong> : Un cadre naturel préservé.</li>
-                            <li><strong>Service 5 Étoiles</strong> : Notre équipe est à votre entière disposition.</li>
-                            <li><strong>Nature & Sérénité</strong> : Jardins tropicaux et espaces verts.</li>
-                        </ul>
-                    </div>
-                    <div className="feature-image animate-up">
-                        <img
-                            src="/Images/73eec850-7b1e-4fba-b0b2-e318ecb4442c.jpg"
-                            alt="Jardin"
-                            loading="lazy"
-                            width="600"
-                            height="400"
-                        />
-                    </div>
-                </div>
-            </section>
+            <React.Suspense fallback={<div className="section container">Chargement des équipements...</div>}>
+                <RoomsPreview />
+                <Features />
+            </React.Suspense>
         </div>
     );
 };

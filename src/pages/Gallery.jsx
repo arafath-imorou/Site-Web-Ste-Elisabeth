@@ -12,7 +12,7 @@ const Gallery = () => {
     }, []);
 
     const fetchGallery = async () => {
-        const { data } = await supabase.from('gallery').select('*').order('created_at', { ascending: false });
+        const { data } = await supabase.from('gallery').select('image_url, category, title, created_at').order('created_at', { ascending: false });
         setImages(data || []);
         setLoading(false);
     };

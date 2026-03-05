@@ -14,19 +14,49 @@ const About = lazy(() => import('./pages/About'));
 const Dashboard = lazy(() => import('./components/Admin/Dashboard'));
 
 const Loader = () => (
-  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--color-background)' }}>
-    <div className="spinner"></div>
+  <div className="global-loader">
+    <div className="loader-content">
+      <div className="spinner"></div>
+      <p>Sainte Elisabeth House...</p>
+    </div>
     <style>{`
+      .global-loader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #FDFBF7;
+        z-index: 9999;
+      }
+      .loader-content {
+        text-align: center;
+      }
       .spinner {
-        width: 50px;
-        height: 50px;
-        border: 5px solid rgba(0,0,0,0.1);
-        border-top-color: var(--color-primary);
+        width: 40px;
+        height: 40px;
+        border: 3px solid rgba(212, 175, 55, 0.1);
+        border-top-color: #D4AF37;
         border-radius: 50%;
-        animation: spin 1s linear infinite;
+        margin: 0 auto 15px;
+        animation: spin 0.8s linear infinite;
       }
       @keyframes spin { 
         to { transform: rotate(360deg); }
+      }
+      .global-loader p {
+        font-family: 'Playfair Display', serif;
+        color: #D4AF37;
+        font-size: 1.1rem;
+        letter-spacing: 2px;
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 0.6; }
+        50% { opacity: 1; }
       }
     `}</style>
   </div>

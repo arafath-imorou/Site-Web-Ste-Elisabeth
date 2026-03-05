@@ -20,7 +20,7 @@ const Rooms = () => {
         try {
             const { data, error } = await supabase
                 .from('rooms')
-                .select(`*, room_images(*)`)
+                .select('id, name, description, image, prices, site, order_index, room_images(url)')
                 .eq('site', activeSite)
                 .order('order_index', { ascending: true });
 
