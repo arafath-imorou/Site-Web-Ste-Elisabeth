@@ -56,7 +56,7 @@ const Footer = () => {
                             </div>
                             <div className="contact-item">
                                 <Facebook size={16} />
-                                <span>DF Fifatin</span>
+                                <span>DF FIFATIN</span>
                             </div>
                         </div>
                         <div className="site-footer-info" style={{ marginTop: '15px' }}>
