@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Phone, MapPin, Instagram, Facebook, Twitter } from 'lucide-react';
+import { Mail, Phone, MapPin, Facebook, MessageCircle } from 'lucide-react';
 import { HOTEL_NAME, SITE_DETAILS, SITES } from '../../constants/sites';
 import './Footer.css';
 
@@ -13,9 +13,8 @@ const Footer = () => {
                         <img src="/Images/LOGO SANS FOND.png" alt="Sainte Elisabeth House" className="footer-logo-img" />
                         <p>Une expérience unique au Bénin. Confort, élégance et hospitalité africaine sur nos deux sites d'Abomey-Calavi et Allada.</p>
                         <div className="social-links">
-                            <a href="#"><Instagram size={20} /></a>
-                            <a href="#"><Facebook size={20} /></a>
-                            <a href="#"><Twitter size={20} /></a>
+                            <a href="#" className="facebook" aria-label="Facebook"><Facebook size={20} /></a>
+                            <a href="https://wa.me/2290166655757" className="whatsapp" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><MessageCircle size={20} /></a>
                         </div>
                     </div>
 
@@ -85,10 +84,11 @@ const Footer = () => {
                         </div>
                     </div>
                 </div>
+                <div className="footer-partner-logo">
+                    <img src="/Images/LOGO SDF.jpg" alt="Logo SDF" className="sdf-logo" />
+                </div>
                 <div className="footer-bottom">
-                    <p>
-                        &copy; <Link to="/admin" style={{ color: 'inherit', textDecoration: 'none', cursor: 'default' }}>{new Date().getFullYear()}</Link> {HOTEL_NAME}. Tous droits réservés.
-                    </p>
+                    <p>&copy; <Link to="/admin" style={{ color: 'inherit', textDecoration: 'none', cursor: 'default' }}>{new Date().getFullYear()}</Link> {HOTEL_NAME}. Tous droits réservés.</p>
                 </div>
             </div>
         </footer>

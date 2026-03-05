@@ -10,6 +10,7 @@ import SettingsForm from './SettingsForm';
 import MenuForm from './MenuForm';
 import ClientForm from './ClientForm';
 import StayForm from './StayForm';
+import { formatPrice } from '../../lib/formatUtils';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -304,7 +305,7 @@ const Dashboard = () => {
                                     <strong>Nombre de personnes :</strong> {viewingReservation.guests_count}
                                 </div>
                                 <div>
-                                    <strong>Montant total :</strong> {viewingReservation.total_price ? `${viewingReservation.total_price} FCFA` : 'Non défini'}
+                                    <strong>Montant total :</strong> {viewingReservation.total_price ? `${formatPrice(viewingReservation.total_price)} FCFA` : 'Non défini'}
                                 </div>
                             </div>
                             <div className="form-group">
@@ -531,11 +532,11 @@ const Dashboard = () => {
                                             <td>
                                                 {room.prices ? (
                                                     <div style={{ fontSize: '0.8rem' }}>
-                                                        {room.prices.ventillee && <div>V: {room.prices.ventillee}</div>}
-                                                        {room.prices.climee && <div>C: {room.prices.climee}</div>}
+                                                        {room.prices.ventillee && <div>V: {formatPrice(room.prices.ventillee)}</div>}
+                                                        {room.prices.climee && <div>C: {formatPrice(room.prices.climee)}</div>}
                                                     </div>
                                                 ) : (
-                                                    `${room.price_per_night} FCFA`
+                                                    `${formatPrice(room.price_per_night)} FCFA`
                                                 )}
                                             </td>
                                             <td>{room.capacity} pers.</td>

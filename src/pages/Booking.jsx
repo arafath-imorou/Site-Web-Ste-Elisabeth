@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { Calendar, Users, Home, CreditCard, CheckCircle, ChevronRight, MapPin } from 'lucide-react';
 import { SITES } from '../constants/sites';
 import { MOCK_ROOMS } from '../data/mockRooms';
+import { formatPrice } from '../lib/formatUtils';
 import './Booking.css';
 
 const Booking = () => {
@@ -213,7 +214,7 @@ const Booking = () => {
                                                     const isConfOption = room.name?.toLowerCase().includes('conférence') || room.name?.toLowerCase().includes('fête');
                                                     return (
                                                         <option key={room.id} value={room.id}>
-                                                            {room.name} ({room.price_per_night} FCFA/{isConfOption ? 'Jour' : 'nuit'})
+                                                            {room.name} ({formatPrice(room.price_per_night)} FCFA/{isConfOption ? 'Jour' : 'nuit'})
                                                         </option>
                                                     );
                                                 })}
@@ -333,7 +334,7 @@ const Booking = () => {
                                     )}
                                     <div className="summary-total">
                                         <span>TOTAL À RÉGLER</span>
-                                        <strong>{bookingData.total_price} FCFA</strong>
+                                        <strong>{formatPrice(bookingData.total_price)} FCFA</strong>
                                     </div>
                                 </div>
                                 <div className="payment-notice">

@@ -30,15 +30,9 @@ const ClientForm = ({ client, onSave, onCancel }) => {
     useEffect(() => {
         if (client) {
             setFormData(client);
-        } else {
-            generateUniqueId();
         }
     }, [client]);
 
-    const generateUniqueId = () => {
-        const randomNum = Math.floor(1000 + Math.random() * 9000);
-        setFormData(prev => ({ ...prev, unique_client_id: `CLI-${randomNum}` }));
-    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -99,16 +93,10 @@ const ClientForm = ({ client, onSave, onCancel }) => {
                                     <input
                                         type="text"
                                         name="unique_client_id"
-                                        value={formData.unique_client_id}
-                                        onChange={handleChange}
-                                        required
-                                        style={{ flex: 1, backgroundColor: '#fff' }}
+                                        value={client ? formData.unique_client_id : 'Généré automatiquement'}
+                                        readOnly
+                                        style={{ flex: 1, backgroundColor: '#f3f4f6', cursor: 'not-allowed' }}
                                     />
-                                    {!client && (
-                                        <button type="button" className="btn-secondary" onClick={generateUniqueId}>
-                                            Générer
-                                        </button>
-                                    )}
                                 </div>
                             </div>
                             <div>

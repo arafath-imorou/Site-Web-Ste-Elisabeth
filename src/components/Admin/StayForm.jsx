@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { X, CheckCircle } from 'lucide-react';
+import { X, CheckCircle, Printer } from 'lucide-react';
+import RegistrationFormPrint from './RegistrationFormPrint';
 
 const StayForm = ({ client, onSave, onCancel }) => {
     const [formData, setFormData] = useState({
@@ -15,11 +16,17 @@ const StayForm = ({ client, onSave, onCancel }) => {
         occupation: '',
         phone: '',
         email: '',
+        full_address: '',
+        usual_residence: '',
+        coming_from: '',
+        going_to: '',
+        children_count: 0,
     });
 
     const [rooms, setRooms] = useState([]);
     const [activeStay, setActiveStay] = useState(null);
     const [realCheckoutDate, setRealCheckoutDate] = useState('');
+    const [showPrintPreview, setShowPrintPreview] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -32,6 +39,8 @@ const StayForm = ({ client, onSave, onCancel }) => {
                 profession: client.profession || '',
                 phone: client.phone || '',
                 email: client.email || '',
+                usual_residence: client.usual_residence || '',
+                full_address: client.full_address || '',
                 age: calculateAge(client.birth_date) || ''
             }));
         }
@@ -107,6 +116,21 @@ const StayForm = ({ client, onSave, onCancel }) => {
         setError('');
 
         try {
+            // 1. Update client info
+            const { error: clientUpdateError } = await supabase
+                .from('clients')
+                .update({
+                    usual_residence: formData.usual_residence,
+                    full_address: formData.full_address,
+                    profession: formData.profession,
+                    phone: formData.phone,
+                    email: formData.email
+                })
+                .eq('id', client.id);
+
+            if (clientUpdateError) throw clientUpdateError;
+
+            // 2. Insert stay
             const { error: insertError } = await supabase
                 .from('stays')
                 .insert([{
@@ -117,6 +141,9 @@ const StayForm = ({ client, onSave, onCancel }) => {
                     check_out: formData.check_out,
                     travel_reason: formData.travel_reason,
                     transport_mode: formData.transport_mode,
+                    coming_from: formData.coming_from,
+                    going_to: formData.going_to,
+                    children_count: parseInt(formData.children_count) || 0,
                     age: parseInt(formData.age) || null,
                     profession: formData.profession,
                     occupation: formData.occupation,
@@ -212,14 +239,33 @@ const StayForm = ({ client, onSave, onCancel }) => {
                             />
                         </div>
 
-                        <button
-                            className="btn-primary"
-                            style={{ width: '100%', backgroundColor: '#10b981', padding: '12px' }}
-                            onClick={handleCheckout}
-                            disabled={loading}
-                        >
-                            {loading ? 'Traitement...' : 'Boucler le séjour (Checkout) et attribuer les points'}
-                        </button>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                            <button
+                                className="btn-primary"
+                                style={{ backgroundColor: '#10b981', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                                onClick={handleCheckout}
+                                disabled={loading}
+                            >
+                                {loading ? 'Traitement...' : 'Boucler le séjour (Checkout) et attribuer les points'}
+                            </button>
+                            <button
+                                type="button"
+                                className="btn-secondary"
+                                style={{ padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: '1px solid #10b981', color: '#047857' }}
+                                onClick={() => setShowPrintPreview(true)}
+                            >
+                                <Printer size={20} /> Aperçu de la fiche
+                            </button>
+                        </div>
+
+                        {/* Printable component with preview */}
+                        {showPrintPreview && (
+                            <RegistrationFormPrint
+                                client={client}
+                                stay={activeStay}
+                                onClose={() => setShowPrintPreview(false)}
+                            />
+                        )}
                     </div>
                 )}
 
@@ -280,11 +326,34 @@ const StayForm = ({ client, onSave, onCancel }) => {
                             <div className="form-group" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                 <div>
                                     <label>Motif de voyage</label>
-                                    <input type="text" name="travel_reason" value={formData.travel_reason} onChange={handleChange} placeholder="ex: Affaires, Tourisme..." />
+                                    <input type="text" name="travel_reason" value={formData.travel_reason} onChange={handleChange} placeholder="ex: Affaires, Tourisme..." required />
                                 </div>
                                 <div>
                                     <label>Mode de transport</label>
-                                    <input type="text" name="transport_mode" value={formData.transport_mode} onChange={handleChange} placeholder="ex: Voiture, Avion..." />
+                                    <input type="text" name="transport_mode" value={formData.transport_mode} onChange={handleChange} placeholder="ex: Voiture, Avion..." required />
+                                </div>
+                                <div style={{ gridColumn: 'span 1' }}>
+                                    <label>Venant de (Provenance)</label>
+                                    <input type="text" name="coming_from" value={formData.coming_from} onChange={handleChange} placeholder="ex: Cotonou, Paris..." />
+                                </div>
+                                <div style={{ gridColumn: 'span 1' }}>
+                                    <label>Allant à (Destination)</label>
+                                    <input type="text" name="going_to" value={formData.going_to} onChange={handleChange} placeholder="ex: Abidjan, Rome..." />
+                                </div>
+                                <div style={{ gridColumn: 'span 2' }}>
+                                    <label>Nombre d'enfants de moins de 15 ans accompagnant le chef de famille</label>
+                                    <input type="number" name="children_count" value={formData.children_count} onChange={handleChange} min="0" />
+                                </div>
+                            </div>
+
+                            <div className="form-group" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                <div>
+                                    <label>Domicile habituel</label>
+                                    <input type="text" name="usual_residence" value={formData.usual_residence} onChange={handleChange} placeholder="ex: Cotonou, Haie Vive" />
+                                </div>
+                                <div>
+                                    <label>Adresse complète</label>
+                                    <input type="text" name="full_address" value={formData.full_address} onChange={handleChange} placeholder="Quartier, Rue, Maison..." />
                                 </div>
                             </div>
 

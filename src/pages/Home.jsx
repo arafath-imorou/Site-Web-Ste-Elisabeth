@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Calendar, Users, ChevronRight, Star, MapPin } from 'lucide-react';
 import { MOCK_ROOMS } from '../data/mockRooms';
+import { formatPrice } from '../lib/formatUtils';
 import './Home.css';
 
 const Home = () => {
@@ -128,8 +129,8 @@ const Home = () => {
                                         <img src={room.image || room.room_images?.[0]?.url || 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=800&q=80'} alt={room.name} />
                                         <div className="room-price">
                                             {room.prices
-                                                ? `À partir de ${Math.min(...Object.values(room.prices))} FCFA`
-                                                : `À partir de ${room.price_per_night} FCFA`}
+                                                ? `À partir de ${formatPrice(Math.min(...Object.values(room.prices)))} FCFA`
+                                                : `À partir de ${formatPrice(room.price_per_night)} FCFA`}
                                         </div>
                                     </div>
                                     <div className="room-info">

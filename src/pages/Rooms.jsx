@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 import { ChevronRight, Filter, MapPin } from 'lucide-react';
 import { SITES } from '../constants/sites';
 import { MOCK_ROOMS } from '../data/mockRooms';
+import { formatPrice } from '../lib/formatUtils';
 import './Rooms.css';
 
 const Rooms = () => {
@@ -91,20 +92,20 @@ const Rooms = () => {
                                                     {room.prices.ventillee && (
                                                         <div className="price-item">
                                                             <span className="label">Ventillée</span>
-                                                            <span className="value">{room.prices.ventillee} FCFA</span>
+                                                            <span className="value">{formatPrice(room.prices.ventillee)} FCFA</span>
                                                         </div>
                                                     )}
                                                     {room.prices.climee && (
                                                         <div className="price-item">
                                                             <span className="label">Climée</span>
-                                                            <span className="value">{room.prices.climee} FCFA</span>
+                                                            <span className="value">{formatPrice(room.prices.climee)} FCFA</span>
                                                         </div>
                                                     )}
                                                 </div>
                                             ) : (
                                                 <>
                                                     <span className="label">À partir de</span>
-                                                    <span className="value">{room.price_per_night} FCFA</span>
+                                                    <span className="value">{formatPrice(room.price_per_night)} FCFA</span>
                                                     <span className="per">/ {room.name?.toLowerCase().includes('conférence') || room.name?.toLowerCase().includes('fête') ? 'JOUR' : 'NUIT'}</span>
                                                 </>
                                             )}

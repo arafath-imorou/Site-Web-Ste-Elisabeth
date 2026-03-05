@@ -1,7 +1,7 @@
 .footer {
     background-color: var(--color-accent);
     color: white;
-    padding: var(--spacing-xl) 0 2rem;
+    padding: 2rem 0 2rem;
 }
 
 .footer-grid {
@@ -37,13 +37,21 @@
 }
 
 .social-links a {
-    color: white;
-    opacity: 0.7;
+    transition: var(--transition-smooth);
+    opacity: 0.9;
+}
+
+.social-links a.facebook {
+    color: #1877F2;
+}
+
+.social-links a.whatsapp {
+    color: #25D366;
 }
 
 .social-links a:hover {
-    color: var(--color-primary);
     opacity: 1;
+    transform: translateY(-3px) scale(1.1);
 }
 
 .footer-links h4,
@@ -124,12 +132,38 @@
     letter-spacing: 1px;
 }
 
+.footer-partner-logo {
+    display: flex;
+    justify-content: center;
+    padding-bottom: 2rem;
+}
+
+.sdf-logo {
+    height: 120px;
+    width: auto;
+    object-fit: contain;
+    border-radius: 8px;
+    transition: var(--transition-smooth);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.sdf-logo:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
 .footer-bottom {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     padding-top: 2rem;
     text-align: center;
     font-size: 0.8rem;
-    opacity: 0.5;
+    opacity: 0.7;
+}
+
+@media (max-width: 768px) {
+    .sdf-logo {
+        height: 80px;
+    }
 }
 
 @media (max-width: 768px) {

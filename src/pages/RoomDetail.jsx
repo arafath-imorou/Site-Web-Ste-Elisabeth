@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Check, ArrowLeft, Users, Square, ShieldCheck, Calendar } from 'lucide-react';
 import { MOCK_ROOMS } from '../data/mockRooms';
+import { formatPrice } from '../lib/formatUtils';
 import './RoomDetail.css';
 
 const RoomDetail = () => {
@@ -64,20 +65,20 @@ const RoomDetail = () => {
                             <div className="dual-prices-detail">
                                 {room.prices.ventillee && (
                                     <div className="price-option">
-                                        <span className="value">{room.prices.ventillee} FCFA</span>
+                                        <span className="value">{formatPrice(room.prices.ventillee)} FCFA</span>
                                         <span className="label">Ventillée</span>
                                     </div>
                                 )}
                                 {room.prices.climee && (
                                     <div className="price-option">
-                                        <span className="value">{room.prices.climee} FCFA</span>
+                                        <span className="value">{formatPrice(room.prices.climee)} FCFA</span>
                                         <span className="label">Climée</span>
                                     </div>
                                 )}
                             </div>
                         ) : (
                             <>
-                                <span className="price">{room.price_per_night} FCFA</span>
+                                <span className="price">{formatPrice(room.price_per_night)} FCFA</span>
                                 <span className="unit">Par {isConference ? 'jour' : 'nuit'}</span>
                             </>
                         )}
