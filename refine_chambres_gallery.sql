@@ -14,7 +14,7 @@ INSERT INTO gallery (title, image_url, category) VALUES
 
 -- Allada Rooms
 ('Chambre Allada (2 places)', '/Images/CHAMBRE ALLADA 2.jpg', 'Chambres'),
-('Chambre Allada (3 places)', '/Images/CAHMBRE ALLADA.jpg', 'Chambres'),
+('Chambre Allada (3 places)', '/Images/CHAMBRE ALLADA.jpg', 'Chambres'),
 ('Chambre Allada Climée', '/Images/CHAMBRE ALLADA 3.jpg', 'Chambres'),
 
 -- Suite Noblesse Secondary Images
