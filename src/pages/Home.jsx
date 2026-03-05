@@ -126,7 +126,13 @@ const Home = () => {
                             rooms.map((room) => (
                                 <div key={room.id} className="room-card animate-up">
                                     <div className="room-image">
-                                        <img src={room.image || room.room_images?.[0]?.url || 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=800&q=80'} alt={room.name} />
+                                        <img
+                                            src={room.image || room.room_images?.[0]?.url || 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=800&q=80'}
+                                            alt={room.name}
+                                            loading="lazy"
+                                            width="800"
+                                            height="500"
+                                        />
                                         <div className="room-price">
                                             {room.prices
                                                 ? `À partir de ${formatPrice(Math.min(...Object.values(room.prices)))} FCFA`
@@ -150,7 +156,13 @@ const Home = () => {
                         ) : (
                             <div className="room-card animate-up">
                                 <div className="room-image">
-                                    <img src="/Images/7887fbb9-3d3a-4ddf-ab0a-be8af007d635.jpg" alt="Exemple Chambre" />
+                                    <img
+                                        src="/Images/7887fbb9-3d3a-4ddf-ab0a-be8af007d635.jpg"
+                                        alt="Exemple Chambre"
+                                        loading="lazy"
+                                        width="800"
+                                        height="500"
+                                    />
                                     <div className="room-price">À partir de 250€</div>
                                 </div>
                                 <div className="room-info">
@@ -185,7 +197,13 @@ const Home = () => {
                         </ul>
                     </div>
                     <div className="feature-image animate-up">
-                        <img src="/Images/73eec850-7b1e-4fba-b0b2-e318ecb4442c.jpg" alt="Jardin" />
+                        <img
+                            src="/Images/73eec850-7b1e-4fba-b0b2-e318ecb4442c.jpg"
+                            alt="Jardin"
+                            loading="lazy"
+                            width="600"
+                            height="400"
+                        />
                     </div>
                 </div>
             </section>

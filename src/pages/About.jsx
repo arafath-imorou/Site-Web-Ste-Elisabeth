@@ -20,8 +20,22 @@ const About = () => {
                         <p>Afin de mieux servir nos hôtes, nous nous sommes étendus sur deux sites stratégiques : Abomey-Calavi et Allada. Chaque site possède son propre caractère, tout en partageant la même promesse d'excellence et de sérénité.</p>
                     </div>
                     <div className="about-image-stack">
-                        <img src="/Images/7cbbeea4-8825-4e89-9d81-ebc613ad9663.jpg" alt="Réception" className="img-1" />
-                        <img src="/Images/bbbe2410-d06f-4968-95d5-4ebe65b80f4c.jpg" alt="Restaurant" className="img-2 glass-box" />
+                        <img
+                            src="/Images/7cbbeea4-8825-4e89-9d81-ebc613ad9663.jpg"
+                            alt="Réception"
+                            className="img-1"
+                            loading="lazy"
+                            width="500"
+                            height="350"
+                        />
+                        <img
+                            src="/Images/bbbe2410-d06f-4968-95d5-4ebe65b80f4c.jpg"
+                            alt="Restaurant"
+                            className="img-2 glass-box"
+                            loading="lazy"
+                            width="500"
+                            height="350"
+                        />
                     </div>
                 </div>
             </div>

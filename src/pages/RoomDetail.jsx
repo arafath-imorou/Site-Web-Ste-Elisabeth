@@ -89,7 +89,7 @@ const RoomDetail = () => {
                     {/* GALLERY */}
                     <div className="room-gallery">
                         <div className="main-image">
-                            <img src={images[activeImage]} alt={room.name} loading="lazy" />
+                            <img src={images[activeImage]} alt={room.name} fetchpriority="high" width="1200" height="800" />
                         </div>
                         <div className="thumbnail-grid">
                             {images.map((img, idx) => (
@@ -98,7 +98,13 @@ const RoomDetail = () => {
                                     className={`thumb ${activeImage === idx ? 'active' : ''}`}
                                     onClick={() => setActiveImage(idx)}
                                 >
-                                    <img src={img} alt={`${room.name} ${idx + 1}`} />
+                                    <img
+                                        src={img}
+                                        alt={`${room.name} ${idx + 1}`}
+                                        loading="lazy"
+                                        width="150"
+                                        height="100"
+                                    />
                                 </div>
                             ))}
                         </div>

@@ -10,7 +10,7 @@ const Footer = () => {
             <div className="container">
                 <div className="footer-grid">
                     <div className="footer-info">
-                        <img src="/Images/LOGO SANS FOND.png" alt="Sainte Elisabeth House" className="footer-logo-img" />
+                        <img src="/Images/LOGO SANS FOND.png" alt="Sainte Elisabeth House" className="footer-logo-img" width="150" height="50" />
                         <p>Une expérience unique au Bénin. Confort, élégance et hospitalité africaine sur nos deux sites d'Abomey-Calavi et Allada.</p>
                         <div className="social-links">
                             <a href="#" className="facebook" aria-label="Facebook"><Facebook size={20} /></a>
@@ -85,7 +85,7 @@ const Footer = () => {
                     </div>
                 </div>
                 <div className="footer-partner-logo">
-                    <img src="/Images/LOGO SDF.jpg" alt="Logo SDF" className="sdf-logo" />
+                    <img src="/Images/LOGO SDF.jpg" alt="Logo SDF" className="sdf-logo" width="120" height="120" />
                 </div>
                 <div className="footer-bottom">
                     <p>&copy; <Link to="/admin" style={{ color: 'inherit', textDecoration: 'none', cursor: 'default' }}>{new Date().getFullYear()}</Link> {HOTEL_NAME}. Tous droits réservés.</p>

@@ -68,7 +68,13 @@ const Gallery = () => {
                 <div className="gallery-grid animate-up">
                     {filteredImages.map((img, idx) => (
                         <div key={idx} className="gallery-item">
-                            <img src={img.image_url} alt={img.title} />
+                            <img
+                                src={img.image_url}
+                                alt={img.title}
+                                loading="lazy"
+                                width="400"
+                                height="400"
+                            />
                             <div className="gallery-overlay">
                                 <span>{img.category}</span>
                                 <h4>{img.title}</h4>

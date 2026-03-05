@@ -80,7 +80,13 @@ const Rooms = () => {
                         rooms.map((room) => (
                             <div key={room.id} className="room-item animate-up">
                                 <div className="room-item-image">
-                                    <img src={room.image || room.room_images?.[0]?.url || 'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=800&q=80'} alt={room.name} />
+                                    <img
+                                        src={room.image || room.room_images?.[0]?.url || 'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=800&q=80'}
+                                        alt={room.name}
+                                        loading="lazy"
+                                        width="800"
+                                        height="500"
+                                    />
                                 </div>
                                 <div className="room-item-content">
                                     <h2>{room.name}</h2>
