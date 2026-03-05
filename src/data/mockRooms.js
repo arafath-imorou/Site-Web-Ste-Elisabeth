@@ -84,8 +84,8 @@ export const MOCK_ROOMS = [
         price_per_night: 5500,
         site: 'Allada',
         amenities: ['Ventilateur', 'Lit 2 places'],
-        image: '/Images/CAHMBRE ALLADA.jpg',
-        room_images: [{ url: '/Images/CAHMBRE ALLADA.jpg' }]
+        image: '/Images/CHAMBRE ALLADA.jpg',
+        room_images: [{ url: '/Images/CHAMBRE ALLADA.jpg' }]
     },
     {
         id: 'allada-2',
@@ -107,7 +107,7 @@ export const MOCK_ROOMS = [
         image: '/Images/CHAMBRE ALLADA 3.jpg',
         room_images: [
             { url: '/Images/CHAMBRE ALLADA 3.jpg' },
-            { url: '/Images/CAHMBRE ALLADA.jpg' }
+            { url: '/Images/CHAMBRE ALLADA.jpg' }
         ]
     }
 ];
