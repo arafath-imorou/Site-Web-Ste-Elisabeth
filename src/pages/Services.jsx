@@ -126,11 +126,11 @@ const Services = () => {
                         </div>
 
                         <div className="menu-gallery-preview">
-                            <img src="/Images/PLAT 1.jpg" alt="Plat 1" className="plat-img" loading="lazy" />
-                            <img src="/Images/PLAT 2.jpg" alt="Plat 2" className="plat-img" loading="lazy" />
-                            <img src="/Images/PLAT 3.jpg" alt="Plat 3" className="plat-img" loading="lazy" />
-                            <img src="/Images/PLAT 4.jpg" alt="Plat 4" className="plat-img" loading="lazy" />
-                            <img src="/Images/Plat 5.jpg" alt="Plat 5" className="plat-img" loading="lazy" />
+                            <img src="/Images/plat_1.jpg" alt="Plat 1" className="plat-img" loading="lazy" />
+                            <img src="/Images/plat_2.jpg" alt="Plat 2" className="plat-img" loading="lazy" />
+                            <img src="/Images/plat_3.jpg" alt="Plat 3" className="plat-img" loading="lazy" />
+                            <img src="/Images/plat_4.jpg" alt="Plat 4" className="plat-img" loading="lazy" />
+                            <img src="/Images/plat_5.jpg" alt="Plat 5" className="plat-img" loading="lazy" />
                         </div>
 
                         <div className="menu-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
