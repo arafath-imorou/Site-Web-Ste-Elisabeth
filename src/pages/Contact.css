@@ -68,6 +68,24 @@
     color: white;
 }
 
+.map-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-primary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    margin-top: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.map-link:hover {
+    color: var(--color-primary-dark);
+    text-decoration: underline;
+    transform: translateX(5px);
+}
+
 .map-placeholder {
     height: 300px;
     border-radius: 4px;

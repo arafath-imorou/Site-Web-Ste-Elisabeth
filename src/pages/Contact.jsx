@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Mail, Phone, MapPin, Send, CheckCircle, MessageCircle } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, CheckCircle, MessageCircle, ExternalLink } from 'lucide-react';
 import './Contact.css';
 
 const Contact = () => {
@@ -66,6 +66,14 @@ const Contact = () => {
                                 <div>
                                     <h4>Adresse</h4>
                                     <p>{settings.contact_address_calavi || 'Abomey-Calavi, Bénin'}</p>
+                                    <a
+                                        href="https://maps.app.goo.gl/DsmsM7kh92g7ha4o9"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="map-link"
+                                    >
+                                        <ExternalLink size={14} /> Voir sur Google Maps
+                                    </a>
                                 </div>
                             </div>
                             <div className="info-item">
@@ -97,6 +105,14 @@ const Contact = () => {
                                 <div>
                                     <h4>Adresse</h4>
                                     <p>{settings.contact_address_allada || 'Allada, Bénin'}</p>
+                                    <a
+                                        href="https://maps.app.goo.gl/FtbPQc5Gdins6gJX7"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="map-link"
+                                    >
+                                        <ExternalLink size={14} /> Voir sur Google Maps
+                                    </a>
                                 </div>
                             </div>
                             <div className="info-item">
