@@ -6,20 +6,33 @@ const Gallery = () => {
     const [images, setImages] = useState([]);
     const [filter, setFilter] = useState('tous');
     const [loading, setLoading] = useState(true);
+    const [errorMsg, setErrorMsg] = useState(null);
 
     useEffect(() => {
         fetchGallery();
     }, []);
 
     const fetchGallery = async () => {
-        const { data } = await supabase.from('gallery').select('image_url, category, title, created_at').order('created_at', { ascending: false });
-        setImages(data || []);
-        setLoading(false);
+        try {
+            const { data, error } = await supabase.from('gallery').select('image_url, category, title, created_at').order('created_at', { ascending: false });
+            if (error) {
+                console.error("Gallery fetch error:", error);
+                setErrorMsg(error.message || JSON.stringify(error));
+            } else {
+                setImages(data || []);
+            }
+        } catch (err) {
+            console.error("Gallery catch error:", err);
+            setErrorMsg(err.message || String(err));
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const categories = ['tous', 'Chambres', 'Restaurant', 'Espaces', 'Événements'];
+    const categories = ['tous', 'Chambres', 'Restaurant', 'Espace', 'Événements'];
 
     if (loading) return <div className="loader container section" style={{ marginTop: '100px' }}>Chargement de la galerie...</div>;
+    if (errorMsg) return <div className="container section" style={{ marginTop: '100px', color: 'red' }}><h3>Erreur de chargement</h3><p>{errorMsg}</p></div>;
 
     // Sort to show 'Chambres' first
     const sortedImages = [...images].sort((a, b) => {
