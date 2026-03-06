@@ -19,23 +19,10 @@ const Gallery = () => {
 
     const categories = ['tous', 'Chambres', 'Restaurant', 'Espaces', 'Événements'];
 
-    const defaultImages = [
-        // CHAMBRES
-        { image_url: '/Images/harmonie_v2.jpg', category: 'Chambres', title: 'Chambre Harmonie' },
-        { image_url: '/Images/ae09e9a2-18c2-44c3-abb4-9899fb67e3ef.jpg', category: 'Chambres', title: 'Chambre Simplicité' },
-        { image_url: '/Images/03fb9daa-e814-4377-84c4-a95f598b2f55.jpg', category: 'Chambres', title: 'Chambre Climée' },
-
-        // RESTAURANT
-        { image_url: '/Images/bbbe2410-d06f-4968-95d5-4ebe65b80f4c.jpg', category: 'Restaurant', title: 'Espace Restauration' },
-
-        // ESPACES
-        { image_url: '/Images/ce9db6be-f16d-4e3e-8a0d-a16ea95d3dcd.jpg', category: 'Espaces', title: 'La Terrasse' },
-    ];
-
-    const displayImages = images.length > 0 ? images : defaultImages;
+    if (loading) return <div className="loader container section" style={{ marginTop: '100px' }}>Chargement de la galerie...</div>;
 
     // Sort to show 'Chambres' first
-    const sortedImages = [...displayImages].sort((a, b) => {
+    const sortedImages = [...images].sort((a, b) => {
         if (a.category === 'Chambres' && b.category !== 'Chambres') return -1;
         if (a.category !== 'Chambres' && b.category === 'Chambres') return 1;
         return 0;
