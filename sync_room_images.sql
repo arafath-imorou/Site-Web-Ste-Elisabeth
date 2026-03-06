@@ -1,7 +1,7 @@
 -- SQL Script to manually update room images and galleries to match the latest normalized file structure.
 
 -- 1. Update main images in 'rooms' table
-UPDATE rooms SET image = '/Images/CHAMBRE HARMONIE.jpg' WHERE name = 'Harmonie' AND site = 'Abomey-Calavi';
+UPDATE rooms SET image = '/Images/chambre_harmonie.jpg' WHERE name = 'Harmonie' AND site = 'Abomey-Calavi';
 UPDATE rooms SET image = '/Images/b6c0562e-0254-487d-ae87-64b738d093a0.jpg' WHERE name = 'Simplicité' AND site = 'Abomey-Calavi';
 UPDATE rooms SET image = '/Images/02d29287-0779-4d84-924c-1fb44b55ad73.jpg' WHERE name = 'Tranquilité' AND site = 'Abomey-Calavi';
 UPDATE rooms SET image = '/Images/CHAMBRE DOUCEUR.jpg' WHERE name = 'Douceur' AND site = 'Abomey-Calavi';
@@ -16,7 +16,7 @@ UPDATE rooms SET image = '/Images/CHAMBRE ALLADA 3.jpg' WHERE name = 'Chambre Cl
 DELETE FROM room_images;
 
 -- Abomey-Calavi Sites
-INSERT INTO room_images (room_id, url) SELECT id, '/Images/CHAMBRE HARMONIE.jpg' FROM rooms WHERE name = 'Harmonie' AND site = 'Abomey-Calavi';
+INSERT INTO room_images (room_id, url) SELECT id, '/Images/chambre_harmonie.jpg' FROM rooms WHERE name = 'Harmonie' AND site = 'Abomey-Calavi';
 
 INSERT INTO room_images (room_id, url) SELECT id, '/Images/b6c0562e-0254-487d-ae87-64b738d093a0.jpg' FROM rooms WHERE name = 'Simplicité' AND site = 'Abomey-Calavi';
 
@@ -38,5 +38,5 @@ INSERT INTO room_images (room_id, url) SELECT id, '/Images/CHAMBRE ALLADA 3.jpg'
 INSERT INTO room_images (room_id, url) SELECT id, '/Images/CHAMBRE ALLADA.jpg' FROM rooms WHERE name = 'Chambre Climée' AND site = 'Allada';
 
 -- 3. Cleanup Gallery table
-UPDATE gallery SET image_url = '/Images/CHAMBRE HARMONIE.jpg' WHERE title = 'Chambre Harmonie';
+UPDATE gallery SET image_url = '/Images/chambre_harmonie.jpg' WHERE title = 'Chambre Harmonie';
 UPDATE gallery SET image_url = '/Images/03fb9daa-e814-4377-84c4-a95f598b2f55.jpg' WHERE title = 'Chambre Climée';
