@@ -21,7 +21,7 @@ const Gallery = () => {
 
     const defaultImages = [
         // CHAMBRES
-        { image_url: '/Images/cd84752d-ed35-4e35-be6a-0d68a82dee0e.jpg', category: 'Chambres', title: 'Chambre Harmonie' },
+        { image_url: '/Images/harmonie_v2.jpg', category: 'Chambres', title: 'Chambre Harmonie' },
         { image_url: '/Images/ae09e9a2-18c2-44c3-abb4-9899fb67e3ef.jpg', category: 'Chambres', title: 'Chambre Simplicité' },
         { image_url: '/Images/03fb9daa-e814-4377-84c4-a95f598b2f55.jpg', category: 'Chambres', title: 'Chambre Climée' },
 

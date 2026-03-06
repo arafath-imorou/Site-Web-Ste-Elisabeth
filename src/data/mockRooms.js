@@ -7,11 +7,9 @@ export const MOCK_ROOMS = [
         prices: { ventillee: 10500 },
         site: 'Abomey-Calavi',
         amenities: ['Ventilateur', 'Vue sur jardin'],
-        image: '/Images/6db85736-a267-495c-b05b-3164774635d4.jpg', // Anciennement sur Tranquilité
+        image: '/Images/harmonie_v2.jpg',
         room_images: [
-            { url: '/Images/6db85736-a267-495c-b05b-3164774635d4.jpg' },
-            { url: '/Images/02d29287-0779-4d84-924c-1fb44b55ad73.jpg' },
-            { url: '/Images/cd84752d-ed35-4e35-be6a-0d68a82dee0e.jpg' }
+            { url: '/Images/harmonie_v2.jpg' }
         ]
     },
     {
