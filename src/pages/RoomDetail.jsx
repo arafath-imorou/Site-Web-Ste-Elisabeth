@@ -52,7 +52,7 @@ const RoomDetail = () => {
     return (
         <div className="room-detail-page">
             <div className="container">
-                <Link to="/rooms" className="back-link">
+                <Link to={`/rooms?site=${room.site}`} className="back-link">
                     <ArrowLeft size={18} /> Retour aux chambres
                 </Link>
 

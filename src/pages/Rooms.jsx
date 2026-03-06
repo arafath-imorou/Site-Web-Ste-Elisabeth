@@ -1,19 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { ChevronRight, Filter, MapPin } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { SITES } from '../constants/sites';
 import { MOCK_ROOMS } from '../data/mockRooms';
 import { formatPrice } from '../lib/formatUtils';
 import './Rooms.css';
 
 const Rooms = () => {
+    const [searchParams, setSearchParams] = useSearchParams();
     const [rooms, setRooms] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeSite, setActiveSite] = useState(SITES.ABOMEY_CALAVI);
+    const initialSite = searchParams.get('site') || SITES.ABOMEY_CALAVI;
+    const [activeSite, setActiveSite] = useState(initialSite);
+
+    useEffect(() => {
+        const siteFromUrl = searchParams.get('site');
+        if (siteFromUrl && siteFromUrl !== activeSite) {
+            setActiveSite(siteFromUrl);
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         fetchRooms();
     }, [activeSite]);
+
+    const handleSiteChange = (site) => {
+        setActiveSite(site);
+        setSearchParams({ site });
+    };
 
     const fetchRooms = async () => {
         setLoading(true);
@@ -53,13 +68,13 @@ const Rooms = () => {
                 <div className="site-tabs animate-up">
                     <button
                         className={`site-tab ${activeSite === SITES.ABOMEY_CALAVI ? 'active' : ''}`}
-                        onClick={() => setActiveSite(SITES.ABOMEY_CALAVI)}
+                        onClick={() => handleSiteChange(SITES.ABOMEY_CALAVI)}
                     >
                         <MapPin size={18} /> SITE ABOMEY-CALAVI
                     </button>
                     <button
                         className={`site-tab ${activeSite === SITES.ALLADA ? 'active' : ''}`}
-                        onClick={() => setActiveSite(SITES.ALLADA)}
+                        onClick={() => handleSiteChange(SITES.ALLADA)}
                     >
                         <MapPin size={18} /> SITE ALLADA
                     </button>
