@@ -174,9 +174,12 @@ const ClientForm = ({ client, onSave, onCancel }) => {
                             <label>Type de pièce d'identité</label>
                             <select name="id_type" value={formData.id_type || 'CNI'} onChange={handleChange}>
                                 <option value="CNI">Carte Nationale d'Identité (CNI)</option>
+                                <option value="CIP">Carte d'Identification Personnelle (CIP)</option>
+                                <option value="Carte Biométrique">Carte Biométrique</option>
                                 <option value="Passeport">Passeport</option>
                                 <option value="Permis de conduire">Permis de conduire</option>
                                 <option value="Carte Consulaire">Carte Consulaire</option>
+                                <option value="Carte Professionnelle">Carte Professionnelle</option>
                                 <option value="Autre">Autre</option>
                             </select>
                         </div>
