@@ -82,8 +82,8 @@ export const MOCK_ROOMS = [
         price_per_night: 5500,
         site: 'Allada',
         amenities: ['Ventilateur', 'Lit 2 places'],
-        image: '/Images/CHAMBRE ALLADA.jpg',
-        room_images: [{ url: '/Images/CHAMBRE ALLADA.jpg' }]
+        image: '/Images/chambre_standard_2_places.jpg',
+        room_images: [{ url: '/Images/chambre_standard_2_places.jpg' }]
     },
     {
         id: 'allada-2',
@@ -92,8 +92,8 @@ export const MOCK_ROOMS = [
         price_per_night: 8000,
         site: 'Allada',
         amenities: ['Ventilateur', 'Lit 3 places'],
-        image: '/Images/CHAMBRE ALLADA 2.jpg',
-        room_images: [{ url: '/Images/CHAMBRE ALLADA 2.jpg' }]
+        image: '/Images/chambre_standard_3_places.jpg',
+        room_images: [{ url: '/Images/chambre_standard_3_places.jpg' }]
     },
     {
         id: 'allada-3',
@@ -105,7 +105,7 @@ export const MOCK_ROOMS = [
         image: '/Images/CHAMBRE ALLADA 3.jpg',
         room_images: [
             { url: '/Images/CHAMBRE ALLADA 3.jpg' },
-            { url: '/Images/CHAMBRE ALLADA.jpg' }
+            { url: '/Images/chambre_standard_3_places.jpg' }
         ]
     }
 ];
