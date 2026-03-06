@@ -15,6 +15,20 @@ const Footer = () => {
                         <div className="social-links">
                             <a href="#" className="facebook" aria-label="Facebook"><Facebook size={20} /></a>
                             <a href="https://wa.me/2290166655757" className="whatsapp" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><MessageCircle size={20} /></a>
+                            <a href="https://tiktok.com/@sainteelisabethhouse" className="tiktok" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    width="20"
+                                    height="20"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    fill="none"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                >
+                                    <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+                                </svg>
+                            </a>
                         </div>
                     </div>
 

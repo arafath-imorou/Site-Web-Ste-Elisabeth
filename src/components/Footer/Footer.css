@@ -49,6 +49,10 @@
     color: #25D366;
 }
 
+.social-links a.tiktok {
+    color: #ff0050;
+}
+
 .social-links a:hover {
     opacity: 1;
     transform: translateY(-3px) scale(1.1);
