@@ -243,6 +243,8 @@ CREATE POLICY "Public Read Room Images" ON room_images FOR SELECT USING (true);
 CREATE POLICY "Public Read Services" ON services FOR SELECT USING (true);
 CREATE POLICY "Public Read Gallery" ON gallery FOR SELECT USING (true);
 CREATE POLICY "Public Read Settings" ON site_settings FOR SELECT USING (true);
+CREATE POLICY "Public Insert Reservations" ON reservations FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public Insert Contacts" ON contacts FOR INSERT WITH CHECK (true);
 
 -- RECEPTION POLICIES (Manage bookings and clients)
 DO $$

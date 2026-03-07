@@ -9,6 +9,19 @@ const RoomsPreview = React.lazy(() => import('../components/Home/RoomsPreview'))
 const Features = React.lazy(() => import('../components/Home/Features'));
 
 const Home = () => {
+    const [checkIn, setCheckIn] = useState(new Date().toISOString().split('T')[0]);
+    const [checkOut, setCheckOut] = useState(new Date(Date.now() + 86400000).toISOString().split('T')[0]);
+    const [guests, setGuests] = useState('2');
+
+    const handleSearch = () => {
+        const params = new URLSearchParams({
+            checkIn,
+            checkOut,
+            guests
+        });
+        window.location.href = `/rooms?${params.toString()}`;
+    };
+
     return (
         <div className="home-page">
             {/* HERO SECTION */}
@@ -58,29 +71,37 @@ const Home = () => {
                             <Calendar className="icon" size={20} />
                             <div className="text">
                                 <label>ARRIVÉE</label>
-                                <input type="date" defaultValue={new Date().toISOString().split('T')[0]} />
+                                <input
+                                    type="date"
+                                    value={checkIn}
+                                    onChange={(e) => setCheckIn(e.target.value)}
+                                />
                             </div>
                         </div>
                         <div className="booking-item">
                             <Calendar className="icon" size={20} />
                             <div className="text">
                                 <label>DÉPART</label>
-                                <input type="date" defaultValue={new Date(Date.now() + 86400000).toISOString().split('T')[0]} />
+                                <input
+                                    type="date"
+                                    value={checkOut}
+                                    onChange={(e) => setCheckOut(e.target.value)}
+                                />
                             </div>
                         </div>
                         <div className="booking-item">
                             <Users className="icon" size={20} />
                             <div className="text">
                                 <label>ADULTES</label>
-                                <select>
-                                    <option>1 Adulte</option>
-                                    <option selected>2 Adultes</option>
-                                    <option>3 Adultes</option>
-                                    <option>4 Adultes</option>
+                                <select value={guests} onChange={(e) => setGuests(e.target.value)}>
+                                    <option value="1">1 Adulte</option>
+                                    <option value="2">2 Adultes</option>
+                                    <option value="3">3 Adultes</option>
+                                    <option value="4">4 Adultes</option>
                                 </select>
                             </div>
                         </div>
-                        <button className="btn-primary search-btn">VÉRIFIER LA DISPONIBILITÉ</button>
+                        <button className="btn-primary search-btn" onClick={handleSearch}>VÉRIFIER LA DISPONIBILITÉ</button>
                     </div>
                 </div>
             </div>
