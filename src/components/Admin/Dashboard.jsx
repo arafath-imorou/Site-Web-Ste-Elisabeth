@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { LayoutDashboard, Bed, CalendarCheck, Image as ImageIcon, Briefcase, MessageSquare, LogOut, Plus, Trash2, Edit, Sparkles, Cog, Utensils, Eye, Users, CheckCircle } from 'lucide-react';
+import { LayoutDashboard, Bed, CalendarCheck, Image as ImageIcon, Briefcase, MessageSquare, LogOut, Plus, Trash2, Edit, Sparkles, Cog, Utensils, Eye, Users, CheckCircle, Printer, Search } from 'lucide-react';
 import Login from './Login';
 import RoomForm from './RoomForm';
 import ServiceForm from './ServiceForm';
@@ -10,6 +10,7 @@ import SettingsForm from './SettingsForm';
 import MenuForm from './MenuForm';
 import ClientForm from './ClientForm';
 import StayForm from './StayForm';
+import RegistrationFormPrint from './RegistrationFormPrint';
 import { formatPrice } from '../../lib/formatUtils';
 import './Dashboard.css';
 
@@ -45,6 +46,9 @@ const Dashboard = () => {
     const [viewingReservation, setViewingReservation] = useState(null);
     const [viewingClient, setViewingClient] = useState(null);
     const [clientStaysHistory, setClientStaysHistory] = useState([]);
+    const [clientSearchTerm, setClientSearchTerm] = useState('');
+    const [selectedStayForPrint, setSelectedStayForPrint] = useState(null);
+    const [showHistoryPrint, setShowHistoryPrint] = useState(false);
 
     useEffect(() => {
         checkUser();
@@ -407,6 +411,7 @@ const Dashboard = () => {
                                                     <th>Site</th>
                                                     <th>Chambre</th>
                                                     <th>Statut</th>
+                                                    <th>Actions</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -422,6 +427,24 @@ const Dashboard = () => {
                                                                 {stay.status === 'completed' ? 'Terminé' : stay.status === 'active' ? 'En cours' : stay.status}
                                                             </span>
                                                         </td>
+                                                        <td>
+                                                            <div style={{ display: 'flex', gap: '5px' }}>
+                                                                <button
+                                                                    className="edit-btn"
+                                                                    title="Voir les détails / Imprimer"
+                                                                    onClick={() => { setSelectedStayForPrint(stay); setShowHistoryPrint(true); }}
+                                                                >
+                                                                    <Eye size={16} />
+                                                                </button>
+                                                                <button
+                                                                    className="edit-btn"
+                                                                    title="Imprimer directement"
+                                                                    onClick={() => { setSelectedStayForPrint(stay); setShowHistoryPrint(true); }}
+                                                                >
+                                                                    <Printer size={16} />
+                                                                </button>
+                                                            </div>
+                                                        </td>
                                                     </tr>
                                                 ))}
                                             </tbody>
@@ -431,6 +454,14 @@ const Dashboard = () => {
                                     )}
                                 </div>
                             </div>
+
+                            {showHistoryPrint && selectedStayForPrint && (
+                                <RegistrationFormPrint
+                                    client={viewingClient}
+                                    stay={selectedStayForPrint}
+                                    onClose={() => { setShowHistoryPrint(false); setSelectedStayForPrint(null); }}
+                                />
+                            )}
                         </div>
                     </div>
                 </div>
@@ -617,6 +648,18 @@ const Dashboard = () => {
 
                     {activeTab === 'clients' && (
                         <div className="admin-table-wrapper card">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                <div className="search-container" style={{ position: 'relative', width: '300px' }}>
+                                    <input
+                                        type="text"
+                                        placeholder="Rechercher par nom, téléphone ou ID..."
+                                        value={clientSearchTerm}
+                                        onChange={(e) => setClientSearchTerm(e.target.value)}
+                                        style={{ width: '100%', padding: '8px 12px', paddingLeft: '35px', borderRadius: '6px', border: '1px solid #ddd' }}
+                                    />
+                                    <Search size={18} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#999' }} />
+                                </div>
+                            </div>
                             <table className="admin-table">
                                 <thead>
                                     <tr>
@@ -629,34 +672,41 @@ const Dashboard = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {clients.map(client => (
-                                        <tr key={client.id}>
-                                            <td><strong>{client.unique_client_id}</strong></td>
-                                            <td>{client.first_name} {client.last_name}</td>
-                                            <td>
-                                                <div style={{ fontSize: '0.8rem' }}>
-                                                    {client.email && <div>{client.email}</div>}
-                                                    {client.phone && <div>{client.phone}</div>}
-                                                </div>
-                                            </td>
-                                            <td><span className="status confirmed">{client.loyalty_points} pts</span></td>
-                                            <td>{new Date(client.created_at).toLocaleDateString()}</td>
-                                            <td className="actions" style={{ display: 'flex', gap: '5px' }}>
-                                                {activeStays.includes(client.id) ? (
-                                                    <button className="btn-primary" style={{ padding: '4px 8px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#10b981' }} onClick={() => { setManagingStayFor(client); setShowStayForm(true); }}>
-                                                        <CheckCircle size={14} /> Clôturer
-                                                    </button>
-                                                ) : (
-                                                    <button className="btn-secondary" style={{ padding: '4px 8px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px' }} onClick={() => { setManagingStayFor(client); setShowStayForm(true); }}>
-                                                        <Bed size={14} /> Séjour
-                                                    </button>
-                                                )}
-                                                <button className="edit-btn" title="Voir les détails" onClick={() => setViewingClient(client)}><Eye size={16} /></button>
-                                                <button className="edit-btn" title="Modifier" onClick={() => { setEditingClient(client); setShowClientForm(true); }}><Edit size={16} /></button>
-                                                <button className="delete-btn" title="Supprimer" onClick={() => handleDeleteClient(client.id)}><Trash2 size={16} /></button>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                    {clients
+                                        .filter(c =>
+                                            (c.first_name && c.first_name.toLowerCase().includes(clientSearchTerm.toLowerCase())) ||
+                                            (c.last_name && c.last_name.toLowerCase().includes(clientSearchTerm.toLowerCase())) ||
+                                            (c.phone && c.phone.includes(clientSearchTerm)) ||
+                                            (c.unique_client_id && c.unique_client_id.toLowerCase().includes(clientSearchTerm.toLowerCase()))
+                                        )
+                                        .map(client => (
+                                            <tr key={client.id}>
+                                                <td><strong>{client.unique_client_id}</strong></td>
+                                                <td>{client.first_name} {client.last_name}</td>
+                                                <td>
+                                                    <div style={{ fontSize: '0.8rem' }}>
+                                                        {client.email && <div>{client.email}</div>}
+                                                        {client.phone && <div>{client.phone}</div>}
+                                                    </div>
+                                                </td>
+                                                <td><span className="status confirmed">{client.loyalty_points} pts</span></td>
+                                                <td>{new Date(client.created_at).toLocaleDateString()}</td>
+                                                <td className="actions" style={{ display: 'flex', gap: '5px' }}>
+                                                    {activeStays.includes(client.id) ? (
+                                                        <button className="btn-primary" style={{ padding: '4px 8px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#10b981' }} onClick={() => { setManagingStayFor(client); setShowStayForm(true); }}>
+                                                            <CheckCircle size={14} /> Clôturer
+                                                        </button>
+                                                    ) : (
+                                                        <button className="btn-secondary" style={{ padding: '4px 8px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px' }} onClick={() => { setManagingStayFor(client); setShowStayForm(true); }}>
+                                                            <Bed size={14} /> Séjour
+                                                        </button>
+                                                    )}
+                                                    <button className="edit-btn" title="Voir les détails" onClick={() => setViewingClient(client)}><Eye size={16} /></button>
+                                                    <button className="edit-btn" title="Modifier" onClick={() => { setEditingClient(client); setShowClientForm(true); }}><Edit size={16} /></button>
+                                                    <button className="delete-btn" title="Supprimer" onClick={() => handleDeleteClient(client.id)}><Trash2 size={16} /></button>
+                                                </td>
+                                            </tr>
+                                        ))}
                                     {clients.length === 0 && <tr><td colSpan="6" className="empty-state">Aucun client enregistré.</td></tr>}
                                 </tbody>
                             </table>
