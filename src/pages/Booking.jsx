@@ -12,6 +12,10 @@ const Booking = () => {
     const navigate = useNavigate();
     const queryParams = new URLSearchParams(location.search);
     const initialRoomId = queryParams.get('room');
+    const initialCheckIn = queryParams.get('checkIn') || '';
+    const initialCheckOut = queryParams.get('checkOut') || '';
+    const initialSite = queryParams.get('site') || SITES.ABOMEY_CALAVI;
+    const initialGuests = parseInt(queryParams.get('guests')) || 2;
 
     const [step, setStep] = useState(1);
     const [rooms, setRooms] = useState([]);
@@ -19,10 +23,10 @@ const Booking = () => {
     const [loading, setLoading] = useState(true);
     const [bookingData, setBookingData] = useState({
         room_id: initialRoomId || '',
-        site: SITES.ABOMEY_CALAVI,
-        check_in: '',
-        check_out: '',
-        guests_count: 2,
+        site: initialSite,
+        check_in: initialCheckIn,
+        check_out: initialCheckOut,
+        guests_count: initialGuests,
         customer_name: '',
         customer_email: '',
         customer_phone: '',
@@ -93,11 +97,15 @@ const Booking = () => {
             setRooms(MOCK_ROOMS);
         } finally {
             if (initialRoomId) {
-                // Note: initialRoomId might be a real DB UUID or a mock ID string
-                // We'll search in both real data and mock data (which is now in 'rooms' state)
-                const initialRoom = MOCK_ROOMS.find(r => r.id === initialRoomId) || []; // Fallback logic
-                // If it's a mock room with prices, we default to ventillee if possible for the initial selection
-                setBookingData(prev => ({ ...prev, room_id: initialRoomId }));
+                setBookingData(prev => {
+                    const room = filteredRooms.find(r => r.id === initialRoomId);
+                    const price = calculateTotalPrice(initialRoomId, initialCheckIn, initialCheckOut);
+                    return {
+                        ...prev,
+                        room_id: initialRoomId,
+                        total_price: price || prev.total_price
+                    };
+                });
             }
             setLoading(false);
         }
