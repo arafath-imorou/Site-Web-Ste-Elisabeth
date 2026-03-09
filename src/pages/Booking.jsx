@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Calendar, Users, Home, CreditCard, CheckCircle, ChevronRight, MapPin } from 'lucide-react';
+import { Calendar, Users, Home, CreditCard, CheckCircle, ChevronRight, MapPin, MessageCircle } from 'lucide-react';
 import { SITES } from '../constants/sites';
 import { MOCK_ROOMS } from '../data/mockRooms';
 import { formatPrice } from '../lib/formatUtils';
@@ -167,6 +167,26 @@ const Booking = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleWhatsAppShare = () => {
+        const room = rooms.find(r => r.id === bookingData.room_id);
+        const sitePhone = bookingData.site === SITES.ABOMEY_CALAVI ? '2290166655757' : '2290167610909';
+
+        const message = `Bonjour Sainte Élisabeth Hôtel,*
+Je viens d'effectuer une réservation sur votre site web. Voici les détails :
+
+*Site :* ${bookingData.site}
+*Hébergement :* ${room?.name}
+*Dates :* Du ${bookingData.check_in} au ${bookingData.check_out}
+*Client :* ${bookingData.customer_name}
+*Nombre de personnes :* ${bookingData.guests_count}
+*Total :* ${formatPrice(bookingData.total_price)} FCFA
+
+Merci de confirmer ma demande.`;
+
+        const encodedMessage = encodeURIComponent(message);
+        window.open(`https://wa.me/${sitePhone}?text=${encodedMessage}`, '_blank');
     };
 
     if (loading && step !== 4) return <div className="container section">Chargement...</div>;
@@ -352,7 +372,16 @@ const Booking = () => {
                                 <CheckCircle size={64} className="success-icon" />
                                 <h2>Réservation Confirmée !</h2>
                                 <p>Votre séjour a été enregistré avec succès. Un email de confirmation vous sera envoyé prochainement.</p>
-                                <button className="btn-primary" onClick={() => navigate('/')}>RETOUR À L'ACCUEIL</button>
+                                <div className="btn-group-vertical" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', maxWidth: '400px', margin: '0 auto' }}>
+                                    <button
+                                        className="btn-primary whatsapp-btn"
+                                        onClick={handleWhatsAppShare}
+                                        style={{ backgroundColor: '#25D366', borderColor: '#25D366', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
+                                    >
+                                        <MessageCircle size={20} /> ENVOYER PAR WHATSAPP
+                                    </button>
+                                    <button className="btn-outline" onClick={() => navigate('/')}>RETOUR À L'ACCUEIL</button>
+                                </div>
                             </div>
                         )}
                     </div>
