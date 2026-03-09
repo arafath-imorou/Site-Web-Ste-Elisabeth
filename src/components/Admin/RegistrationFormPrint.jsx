@@ -279,56 +279,49 @@ const RegistrationFormPrint = ({ client, stay, onClose }) => {
                 @media print {
                     @page {
                         size: A4;
-                        margin: 0;
+                        margin: 10mm;
                     }
-                    * {
-                        -webkit-print-color-adjust: exact !important;
-                        print-color-adjust: exact !important;
-                        box-sizing: border-box !important;
-                    }
-                    body { 
-                        background: white !important; 
-                        margin: 0; 
-                        padding: 0;
-                        width: 210mm;
-                        height: 297mm;
-                    }
-                    body * { visibility: hidden; }
-                    .registration-print-container, .registration-print-container * { 
-                        visibility: visible; 
-                        overflow-wrap: break-word !important;
-                        word-break: normal !important;
-                    }
-                    .registration-print-container {
-                        position: absolute !important;
-                        left: 0;
-                        top: 0;
-                        width: 210mm;
-                        height: 297mm;
-                        padding: 10mm 15mm !important;
-                        margin: 0 !important;
-                        box-shadow: none !important;
+                    /* Reset body visibility and background */
+                    body {
                         background: white !important;
-                        display: block !important;
-                    }
-                    .no-print { display: none !important; }
-                    .registration-print-overlay { 
-                        background-color: transparent !important; 
-                        position: static !important;
+                        margin: 0 !important;
                         padding: 0 !important;
-                        width: auto !important;
-                        height: auto !important;
+                    }
+                    /* Hide ALL direct children of body EXCEPT the overlay containing our print content */
+                    body > *:not(.registration-print-overlay) {
+                        display: none !important;
+                    }
+                    /* Ensure the overlay and its parents are visible and not taking up extra space */
+                    #root, .registration-print-overlay {
                         display: block !important;
-                    }
-                    table {
+                        visibility: visible !important;
+                        position: static !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        background: white !important;
                         width: 100% !important;
-                        border-collapse: collapse !important;
+                        height: auto !important;
                     }
-                    td {
-                        padding: 4px 0 !important;
-                        vertical-align: top !important;
-                        overflow-wrap: break-word !important;
+                    /* The container that looks like a paper */
+                    .registration-print-container {
+                        display: block !important;
+                        visibility: visible !important;
+                        width: 100% !important;
+                        max-width: none !important;
+                        margin: 0 !important;
+                        padding: 5mm !important;
+                        box-shadow: none !important;
+                        border: none !important;
+                        position: static !important;
                     }
+                    .no-print {
+                        display: none !important;
+                    }
+                    /* Optimization for tables */
+                    table { page-break-inside: auto; }
+                    tr { page-break-inside: avoid; page-break-after: auto; }
+                    thead { display: table-header-group; }
+                    tfoot { display: table-footer-group; }
                 }
             `}} />
         </div>

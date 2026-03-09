@@ -390,6 +390,7 @@ const Dashboard = () => {
                                     <div><strong>Pays :</strong> {viewingClient.country || '-'}</div>
                                     <div><strong>Nationalité :</strong> {viewingClient.nationality || '-'}</div>
                                     <div><strong>Profession :</strong> {viewingClient.profession || '-'}</div>
+                                    <div><strong>Site d'inscription :</strong> {viewingClient.site || '-'}</div>
                                 </div>
                             </div>
 
@@ -681,6 +682,7 @@ const Dashboard = () => {
                                         <th>Contact (Email / Tél)</th>
                                         <th>Points de Fidélité</th>
                                         <th>Inscrit le</th>
+                                        <th>Site</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -704,6 +706,7 @@ const Dashboard = () => {
                                                 </td>
                                                 <td><span className="status confirmed">{client.loyalty_points} pts</span></td>
                                                 <td>{new Date(client.created_at).toLocaleDateString()}</td>
+                                                <td><span className="status" style={{ backgroundColor: '#f3f4f6', color: '#374151', padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>{client.site === 'Abomey-Calavi' ? 'ABC' : client.site === 'Allada' ? 'ALD' : '-'}</span></td>
                                                 <td className="actions" style={{ display: 'flex', gap: '5px' }}>
                                                     {activeStays.includes(client.id) ? (
                                                         <button className="btn-primary" style={{ padding: '4px 8px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#10b981' }} onClick={() => { setManagingStayFor(client); setShowStayForm(true); }}>

@@ -197,7 +197,7 @@ const StayForm = ({ client, userSite, onSave, onCancel }) => {
                 .from('stays')
                 .update({
                     status: 'completed',
-                    check_out: realCheckoutDate
+                    real_check_out: realCheckoutDate
                 })
                 .eq('id', activeStay.id);
 
