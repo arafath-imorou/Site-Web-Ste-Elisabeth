@@ -17,7 +17,7 @@ import './Dashboard.css';
 const Dashboard = () => {
     const [user, setUser] = useState(null);
     const [role, setRole] = useState(null);
-    const [activeTab, setActiveTab] = useState('rooms');
+    const [activeTab, setActiveTab] = useState('');
     const [rooms, setRooms] = useState([]);
     const [reservations, setReservations] = useState([]);
     const [messages, setMessages] = useState([]);
@@ -85,6 +85,12 @@ const Dashboard = () => {
             const { role: userRole, site: siteName } = await fetchUserInfo(user.id);
             setRole(userRole);
             setUserSite(siteName);
+            // Default tab based on role
+            if (userRole === 'reception') {
+                setActiveTab('bookings');
+            } else {
+                setActiveTab('rooms');
+            }
         }
         setLoading(false);
     };
@@ -481,7 +487,7 @@ const Dashboard = () => {
                 </div>
 
                 <nav className="sidebar-nav">
-                    {(role === 'admin' || role === 'reception') && (
+                    {role === 'admin' && (
                         <button className={activeTab === 'rooms' ? 'active' : ''} onClick={() => setActiveTab('rooms')}>
                             <Bed size={20} /> <span>Gestion des Chambres</span>
                         </button>

@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 
 const ClientForm = ({ client, onSave, onCancel }) => {
     const [formData, setFormData] = useState({
+        site: '',
         unique_client_id: '',
         first_name: '',
         last_name: '',
@@ -83,6 +84,37 @@ const ClientForm = ({ client, onSave, onCancel }) => {
                 {error && <div className="error-message" style={{ color: 'red', marginTop: '1rem' }}>{error}</div>}
 
                 <form onSubmit={handleSubmit} className="admin-form" style={{ marginTop: '1rem' }}>
+
+                    {/* Selection du Site */}
+                    <div style={{ padding: '15px', backgroundColor: '#eff6ff', borderRadius: '8px', marginBottom: '1.5rem', border: '1px solid #bfdbfe' }}>
+                        <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '10px' }}>Site <span style={{ color: 'red' }}>*</span></label>
+                        <div style={{ display: 'flex', gap: '2rem' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                <input
+                                    type="radio"
+                                    name="site"
+                                    value="Abomey-Calavi"
+                                    checked={formData.site === 'Abomey-Calavi'}
+                                    onChange={handleChange}
+                                    required={!client}
+                                    disabled={!!client}
+                                />
+                                Site d'Abomey Calavi
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                <input
+                                    type="radio"
+                                    name="site"
+                                    value="Allada"
+                                    checked={formData.site === 'Allada'}
+                                    onChange={handleChange}
+                                    required={!client}
+                                    disabled={!!client}
+                                />
+                                Site d'Allada
+                            </label>
+                        </div>
+                    </div>
 
                     {/* Identifier and Points */}
                     <div style={{ padding: '15px', backgroundColor: '#f9fafb', borderRadius: '8px', marginBottom: '1.5rem', border: '1px solid #e5e7eb' }}>
