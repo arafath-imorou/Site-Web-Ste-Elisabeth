@@ -36,13 +36,11 @@
 }
 
 .hero h1 {
-    font-size: 4.5rem;
+    font-size: clamp(2.5rem, 10vw, 4.5rem);
     color: white;
-    /* Hero title back to white as requested */
     margin-bottom: 1.5rem;
     line-height: 1.1;
     text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
-    /* Keep shadow for readability */
 }
 
 .hero p {
@@ -345,20 +343,34 @@
 }
 
 @media (max-width: 992px) {
-    .hero h1 {
-        font-size: 3rem;
+    .hero {
+        height: auto;
+        min-height: 80vh;
+        padding-top: 100px;
+        padding-bottom: 80px;
     }
 
     .booking-bar {
         grid-template-columns: 1fr 1fr;
+        padding: 1rem;
+    }
+
+    .booking-item {
+        border-right: none;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     }
 
     .search-col {
         grid-column: span 2;
+        padding-top: 1rem;
     }
 
     .grid-2 {
         grid-template-columns: 1fr;
+    }
+
+    .rooms-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     }
 }
 
@@ -371,7 +383,20 @@
         grid-template-columns: 1fr;
     }
 
+    .search-col {
+        grid-column: span 1;
+    }
+
     .hero-btns {
         flex-direction: column;
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
+    }
+
+    .hero-btns .btn-primary,
+    .hero-btns .btn-outline {
+        width: 100%;
+        text-align: center;
     }
 }
