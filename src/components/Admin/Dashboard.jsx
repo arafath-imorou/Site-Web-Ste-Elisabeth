@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { LayoutDashboard, Bed, CalendarCheck, Image as ImageIcon, Briefcase, MessageSquare, LogOut, Plus, Trash2, Edit, Sparkles, Cog, Utensils, Eye, Users, CheckCircle, Printer, Search } from 'lucide-react';
+import { LayoutDashboard, Bed, CalendarCheck, Image as ImageIcon, Briefcase, MessageSquare, LogOut, Plus, Trash2, Edit, Sparkles, Cog, Utensils, Eye, Users, CheckCircle, Printer, Search, LayoutGrid } from 'lucide-react';
 import Login from './Login';
 import RoomForm from './RoomForm';
 import ServiceForm from './ServiceForm';
@@ -27,6 +27,7 @@ const Dashboard = () => {
     const [gallery, setGallery] = useState([]);
     const [clients, setClients] = useState([]);
     const [activeStays, setActiveStays] = useState([]);
+    const [activeStaysWithClients, setActiveStaysWithClients] = useState([]);
     const [userSite, setUserSite] = useState(null);
     const [loading, setLoading] = useState(true);
     const [showRoomForm, setShowRoomForm] = useState(false);
@@ -75,8 +76,8 @@ const Dashboard = () => {
 
     useEffect(() => {
         if (user && role) {
-            if (activeTab === 'rooms') fetchRooms();
-            if (activeTab === 'bookings') fetchReservations();
+            if (activeTab === 'rooms' || activeTab === 'room-status') fetchRooms();
+            if (activeTab === 'bookings' || activeTab === 'room-status') fetchReservations();
             if (activeTab === 'messages') fetchMessages();
             if (activeTab === 'services') fetchServices();
             if (activeTab === 'menus') fetchMenus();
@@ -84,6 +85,9 @@ const Dashboard = () => {
             if (activeTab === 'gallery') fetchGallery();
             if (activeTab === 'clients') {
                 fetchClients();
+                fetchActiveStays();
+            }
+            if (activeTab === 'room-status') {
                 fetchActiveStays();
             }
         }
@@ -176,13 +180,17 @@ const Dashboard = () => {
     };
 
     const fetchActiveStays = async () => {
-        let query = supabase.from('stays').select('client_id').eq('status', 'active');
+        let query = supabase.from('stays')
+            .select('client_id, room_id, status, clients(first_name, last_name)')
+            .eq('status', 'active');
+
         if (userSite) {
             query = query.eq('site', userSite);
         }
         const { data, error } = await query;
         if (error) console.error('Fetch Active Stays Error:', error);
         setActiveStays(data?.map(s => s.client_id) || []);
+        setActiveStaysWithClients(data || []);
     };
 
     const fetchClientHistory = async (clientId) => {
@@ -514,6 +522,9 @@ const Dashboard = () => {
                     </button>
                     {role === 'admin' && (
                         <>
+                            <button className={activeTab === 'room-status' ? 'active' : ''} onClick={() => setActiveTab('room-status')}>
+                                <LayoutGrid size={20} /> <span>État des Chambres</span>
+                            </button>
                             <button className={activeTab === 'services' ? 'active' : ''} onClick={() => setActiveTab('services')}>
                                 <Briefcase size={20} /> <span>Services</span>
                             </button>
@@ -544,7 +555,7 @@ const Dashboard = () => {
             <main className="dashboard-main">
                 <header className="dashboard-header">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-                        <h2>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1).replace('rooms', 'Chambres').replace('bookings', 'Réservations').replace('messages', 'Messages').replace('services', 'Services').replace('gallery', 'Galerie').replace('settings', 'Configuration').replace('clients', 'Clients & Fidélité')}</h2>
+                        <h2>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1).replace('rooms', 'Chambres').replace('bookings', 'Réservations').replace('messages', 'Messages').replace('services', 'Services').replace('gallery', 'Galerie').replace('settings', 'Configuration').replace('clients', 'Clients & Fidélité').replace('room-status', 'État des Chambres')}</h2>
                         <button className="logout-btn-header" onClick={handleLogout} title="Se déconnecter" style={{ border: 'none', background: 'none', color: '#ff4d4d', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', fontWeight: '500' }}>
                             <LogOut size={18} /> <span>Déconnexion</span>
                         </button>
@@ -860,6 +871,69 @@ const Dashboard = () => {
                                     {offers.length === 0 && <tr><td colSpan="4" className="empty-state">Aucune offre trouvée.</td></tr>}
                                 </tbody>
                             </table>
+                        </div>
+                    )}
+
+                    {activeTab === 'room-status' && role === 'admin' && (
+                        <div className="room-status-container">
+                            {['Abomey-Calavi', 'Allada'].map(site => {
+                                const siteRooms = rooms.filter(r => r.site === site).sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
+                                if (siteRooms.length === 0) return null;
+
+                                const stats = {
+                                    total: siteRooms.length,
+                                    libre: siteRooms.filter(r => r.is_available && !activeStaysWithClients.some(s => s.room_id === r.id) && !reservations.some(res => res.room_id === r.id && res.status === 'confirmed')).length,
+                                    occupe: siteRooms.filter(r => activeStaysWithClients.some(s => s.room_id === r.id)).length,
+                                    reserve: siteRooms.filter(r => reservations.some(res => res.room_id === r.id && res.status === 'confirmed') && !activeStaysWithClients.some(s => s.room_id === r.id)).length,
+                                };
+
+                                return (
+                                    <div key={site} className="site-section">
+                                        <h3><Bed size={24} /> {site}</h3>
+                                        <div className="status-stats-bar">
+                                            <div className="stat-item total">Total: {stats.total}</div>
+                                            <div className="stat-item libre">Libre: {stats.libre}</div>
+                                            <div className="stat-item occupe">Occupé: {stats.occupe}</div>
+                                            <div className="stat-item reserve">Réservé: {stats.reserve}</div>
+                                        </div>
+                                        <div className="room-status-grid">
+                                            {siteRooms.map(room => {
+                                                const stay = activeStaysWithClients.find(s => s.room_id === room.id);
+                                                const reservation = reservations.find(res => res.room_id === room.id && res.status === 'confirmed');
+
+                                                let status = 'libre';
+                                                let guest = '';
+
+                                                if (stay) {
+                                                    status = 'occupe';
+                                                    guest = `${stay.clients?.first_name} ${stay.clients?.last_name}`;
+                                                } else if (reservation) {
+                                                    status = 'reserve';
+                                                    guest = reservation.customer_name;
+                                                } else if (!room.is_available) {
+                                                    status = 'maintenance';
+                                                }
+
+                                                return (
+                                                    <div key={room.id} className={`room-status-card ${status}`}>
+                                                        <div className="room-card-header">
+                                                            <span className="room-number">{room.name}</span>
+                                                            <span className="status-badge">{status}</span>
+                                                        </div>
+                                                        <div className="room-card-content">
+                                                            {guest ? (
+                                                                <span className="guest-name" title={guest}>{guest}</span>
+                                                            ) : (
+                                                                <span style={{ opacity: 0.5, fontSize: '0.75rem' }}>Aucun occupant</span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     )}
 
