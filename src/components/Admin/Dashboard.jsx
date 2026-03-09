@@ -288,7 +288,14 @@ const Dashboard = () => {
                 <StayForm
                     client={managingStayFor}
                     userSite={userSite}
-                    onSave={() => { setShowStayForm(false); setManagingStayFor(null); fetchClients(); fetchActiveStays(); }}
+                    onSave={() => {
+                        setShowStayForm(false);
+                        setManagingStayFor(null);
+                        fetchClients();
+                        fetchActiveStays();
+                        fetchRooms();
+                        fetchReservations();
+                    }}
                     onCancel={() => { setShowStayForm(false); setManagingStayFor(null); }}
                 />
             )}

@@ -77,7 +77,9 @@ const StayForm = ({ client, userSite, onSave, onCancel }) => {
             if (error) throw error;
             if (data) {
                 setActiveStay(data);
-                setRealCheckoutDate(data.check_out);
+                // Default real checkout date to today for closure
+                const today = new Date().toISOString().split('T')[0];
+                setRealCheckoutDate(today);
             }
         } catch (err) {
             console.error('Error fetching stay:', err);
@@ -175,7 +177,7 @@ const StayForm = ({ client, userSite, onSave, onCancel }) => {
     };
 
     const handleCheckout = async () => {
-        if (!window.confirm("Voulez-vous vraiment boucler ce séjour ? Le client recevra +100 points de fidélité.")) return;
+        if (!window.confirm("Voulez-vous vraiment boucler ce séjour ? Le client recevra ses points de fidélité selon la durée réelle.")) return;
 
         setLoading(true);
         setError('');
@@ -273,7 +275,7 @@ const StayForm = ({ client, userSite, onSave, onCancel }) => {
                                 onClick={handleCheckout}
                                 disabled={loading}
                             >
-                                {loading ? 'Traitement...' : 'Boucler le séjour (Checkout) et attribuer les points'}
+                                {loading ? 'TRAITEMENT...' : 'BOUCLER LE SÉJOUR (CHECKOUT) ET ATTRIBUER LES POINTS'}
                             </button>
                             <button
                                 type="button"
