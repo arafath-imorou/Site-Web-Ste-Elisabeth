@@ -181,7 +181,7 @@ const Dashboard = () => {
 
     const fetchActiveStays = async () => {
         let query = supabase.from('stays')
-            .select('client_id, room_id, status, clients(first_name, last_name)')
+            .select('client_id, room_id, status, check_in, check_out, clients(first_name, last_name)')
             .eq('status', 'active');
 
         if (userSite) {
@@ -903,13 +903,16 @@ const Dashboard = () => {
 
                                                 let status = 'libre';
                                                 let guest = '';
+                                                let dates = '';
 
                                                 if (stay) {
                                                     status = 'occupe';
                                                     guest = `${stay.clients?.first_name} ${stay.clients?.last_name}`;
+                                                    dates = `${new Date(stay.check_in).toLocaleDateString()} - ${new Date(stay.check_out).toLocaleDateString()}`;
                                                 } else if (reservation) {
                                                     status = 'reserve';
                                                     guest = reservation.customer_name;
+                                                    dates = `${new Date(reservation.check_in).toLocaleDateString()} - ${new Date(reservation.check_out).toLocaleDateString()}`;
                                                 } else if (!room.is_available) {
                                                     status = 'maintenance';
                                                 }
@@ -922,7 +925,12 @@ const Dashboard = () => {
                                                         </div>
                                                         <div className="room-card-content">
                                                             {guest ? (
-                                                                <span className="guest-name" title={guest}>{guest}</span>
+                                                                <>
+                                                                    <span className="guest-name" title={guest}>{guest}</span>
+                                                                    <div style={{ fontSize: '0.7rem', opacity: 0.7, marginTop: '4px' }}>
+                                                                        {dates}
+                                                                    </div>
+                                                                </>
                                                             ) : (
                                                                 <span style={{ opacity: 0.5, fontSize: '0.75rem' }}>Aucun occupant</span>
                                                             )}
