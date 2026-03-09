@@ -174,8 +174,6 @@ const Home = () => {
                                 <select value={guests} onChange={(e) => setGuests(e.target.value)}>
                                     <option value="1">1 Adulte</option>
                                     <option value="2">2 Adultes</option>
-                                    <option value="3">3 Adultes</option>
-                                    <option value="4">4 Adultes</option>
                                 </select>
                             </div>
                         </div>

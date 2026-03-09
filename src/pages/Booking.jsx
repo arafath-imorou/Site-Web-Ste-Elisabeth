@@ -274,7 +274,7 @@ Merci de confirmer ma demande.`;
                                                     <option value={150}>Plus de 100 Personnes</option>
                                                 </>
                                             ) : (
-                                                [1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n} Personne{n > 1 ? 's' : ''}</option>)
+                                                [1, 2].map(n => <option key={n} value={n}>{n} Personne{n > 1 ? 's' : ''}</option>)
                                             )}
                                         </select>
                                     </div>
