@@ -171,7 +171,12 @@ const Booking = () => {
             if (error) throw error;
             setStep(4);
         } catch (err) {
-            alert('Erreur: ' + err.message);
+            console.error('Submission error:', err);
+            if (err.message === 'Failed to fetch') {
+                alert('Erreur de connexion : Impossible de joindre le serveur. Cela peut être dû à un bloqueur de publicité ou à un problème de configuration (CORS) sur Supabase.');
+            } else {
+                alert('Erreur: ' + err.message);
+            }
         } finally {
             setLoading(false);
         }
