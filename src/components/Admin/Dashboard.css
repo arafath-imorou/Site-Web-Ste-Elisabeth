@@ -89,10 +89,13 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 3rem;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 
 .dashboard-header h2 {
-    font-size: 2rem;
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    white-space: nowrap;
 }
 
 .btn-add {
@@ -109,9 +112,17 @@
     overflow: hidden;
 }
 
+.admin-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 .admin-table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 800px;
+    /* Ensure table doesn't get too squashed */
 }
 
 .admin-table th {
@@ -260,11 +271,44 @@
 
     .sidebar-header h3,
     .sidebar-header span,
-    .sidebar-nav button span {
+    .sidebar-nav button span,
+    .logout-btn span {
         display: none;
+    }
+
+    .logout-btn {
+        margin: 1rem;
+        padding: 0.8rem;
+        justify-content: center;
     }
 
     .dashboard-main {
         margin-left: 80px;
+        padding: 1.5rem 2rem;
+    }
+
+    .dashboard-header {
+        margin-bottom: 2rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .dashboard-main {
+        padding: 1rem;
+    }
+
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .btn-add {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .search-container {
+        width: 100% !important;
     }
 }
