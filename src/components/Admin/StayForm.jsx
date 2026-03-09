@@ -176,11 +176,20 @@ const StayForm = ({ client, userSite, onSave, onCancel }) => {
         }
     };
 
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [successMsg, setSuccessMsg] = useState('');
+
     const handleCheckout = async () => {
+        if (!activeStay) {
+            setError('Aucun séjour actif trouvé à clôturer.');
+            return;
+        }
+
         if (!window.confirm("Voulez-vous vraiment boucler ce séjour ? Le client recevra ses points de fidélité selon la durée réelle.")) return;
 
         setLoading(true);
         setError('');
+        console.log('Starting checkout for stay:', activeStay.id);
 
         try {
             // 1. Mark stay as completed and update checkout date
@@ -192,7 +201,10 @@ const StayForm = ({ client, userSite, onSave, onCancel }) => {
                 })
                 .eq('id', activeStay.id);
 
-            if (updateError) throw updateError;
+            if (updateError) {
+                console.error('Stay update error:', updateError);
+                throw new Error(`Erreur séjour: ${updateError.message}`);
+            }
 
             // 2. Mark room as available again
             const { error: roomUpdateError } = await supabase
@@ -200,7 +212,10 @@ const StayForm = ({ client, userSite, onSave, onCancel }) => {
                 .update({ is_available: true })
                 .eq('id', activeStay.room_id);
 
-            if (roomUpdateError) throw roomUpdateError;
+            if (roomUpdateError) {
+                console.error('Room update error:', roomUpdateError);
+                throw new Error(`Erreur chambre: ${roomUpdateError.message}`);
+            }
 
             // 3. Add loyalty points to the client
             const checkInDate = new Date(activeStay.check_in);
@@ -211,19 +226,23 @@ const StayForm = ({ client, userSite, onSave, onCancel }) => {
             const pointsToAdd = diffDays * 20;
             const newPoints = (client.loyalty_points || 0) + pointsToAdd;
 
+            console.log(`Adding ${pointsToAdd} points to client ${client.id}. New total: ${newPoints}`);
+
             const { error: clientError } = await supabase
                 .from('clients')
                 .update({ loyalty_points: newPoints })
                 .eq('id', client.id);
 
-            if (clientError) throw clientError;
+            if (clientError) {
+                console.error('Client points update error:', clientError);
+                throw new Error(`Erreur points: ${clientError.message}`);
+            }
 
-            alert(`Séjour terminé ! ${pointsToAdd} points ont été ajoutés au client.`);
-
-            onSave();
+            setSuccessMsg(`Séjour terminé avec succès ! ${pointsToAdd} points ont été ajoutés au client.`);
+            setShowSuccess(true);
         } catch (err) {
             console.error('Error checking out:', err);
-            setError('Erreur lors de la clôture du séjour.');
+            setError(`Échec de la clôture: ${err.message || 'Erreur inconnue'}`);
         } finally {
             setLoading(false);
         }
@@ -237,192 +256,211 @@ const StayForm = ({ client, userSite, onSave, onCancel }) => {
                     <button type="button" className="delete-btn" onClick={onCancel}><X size={20} /></button>
                 </div>
 
-                {error && <div className="error-message" style={{ color: 'red', marginTop: '1rem' }}>{error}</div>}
+                {error && <div className="error-message" style={{ color: 'red', marginTop: '1rem', padding: '10px', backgroundColor: '#fee2e2', borderRadius: '4px' }}>{error}</div>}
 
-                {loading && !activeStay && <div style={{ padding: '20px', textAlign: 'center' }}>Chargement...</div>}
-
-                {/* ACTIVE STAY VIEW */}
-                {!loading && activeStay && (
-                    <div style={{ padding: '20px', backgroundColor: '#ecfdf5', border: '1px solid #10b981', borderRadius: '8px', marginTop: '1rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
-                            <CheckCircle color="#10b981" />
-                            <h4 style={{ margin: 0, color: '#047857' }}>Séjour en cours</h4>
+                {showSuccess ? (
+                    <div style={{ padding: '30px', textAlign: 'center' }}>
+                        <div style={{ marginBottom: '20px' }}>
+                            <CheckCircle size={60} color="#10b981" style={{ margin: '0 auto' }} />
                         </div>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
-                            <div><strong>Site :</strong> {activeStay.site}</div>
-                            <div><strong>Chambre :</strong> {activeStay.rooms?.name || 'Inconnue'}</div>
-                            <div><strong>Arrivée :</strong> {new Date(activeStay.check_in).toLocaleDateString()}</div>
-                            <div><strong>Départ prévu :</strong> {new Date(activeStay.check_out).toLocaleDateString()}</div>
-                        </div>
-
-                        <div style={{ marginBottom: '15px' }}>
-                            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: '#047857' }}>Saisir la date de départ réelle :</label>
-                            <input
-                                type="date"
-                                className="form-control"
-                                value={realCheckoutDate}
-                                onChange={(e) => setRealCheckoutDate(e.target.value)}
-                                style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #10b981' }}
-                                required
-                            />
-                        </div>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                            <button
-                                className="btn-primary"
-                                style={{ backgroundColor: '#10b981', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                                onClick={handleCheckout}
-                                disabled={loading}
-                            >
-                                {loading ? 'TRAITEMENT...' : 'BOUCLER LE SÉJOUR (CHECKOUT) ET ATTRIBUER LES POINTS'}
-                            </button>
-                            <button
-                                type="button"
-                                className="btn-secondary"
-                                style={{ padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: '1px solid #10b981', color: '#047857' }}
-                                onClick={() => setShowPrintPreview(true)}
-                            >
-                                <Printer size={20} /> Aperçu de la fiche
-                            </button>
-                        </div>
-
-                        {/* Printable component with preview */}
-                        {showPrintPreview && (
-                            <RegistrationFormPrint
-                                client={client}
-                                stay={activeStay}
-                                onClose={() => setShowPrintPreview(false)}
-                            />
-                        )}
+                        <h3 style={{ color: '#047857', marginBottom: '10px' }}>Félicitations !</h3>
+                        <p style={{ marginBottom: '25px', color: '#374151' }}>{successMsg}</p>
+                        <button
+                            className="btn-primary"
+                            style={{ backgroundColor: '#10b981', width: '100%', padding: '12px' }}
+                            onClick={onSave}
+                        >
+                            Terminer et Actualiser
+                        </button>
                     </div>
-                )}
+                ) : (
+                    <>
+                        {loading && !activeStay && <div style={{ padding: '20px', textAlign: 'center' }}>Chargement...</div>}
 
-                {/* NEW STAY FORM */}
-                {!loading && !activeStay && (
-                    <form onSubmit={handleCreateStay} className="admin-form" style={{ marginTop: '1rem' }}>
-                        <div className="form-group" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                            <div>
-                                <label>Site</label>
-                                <select name="site" value={formData.site} onChange={handleChange} disabled={!!userSite}>
-                                    <option value="Abomey-Calavi">Abomey-Calavi</option>
-                                    <option value="Allada">Allada</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label>Chambre à affecter</label>
-                                <select
-                                    name="room_id"
-                                    value={formData.room_id}
-                                    onChange={handleChange}
-                                    required
-                                    disabled={rooms.length === 0}
-                                >
-                                    {rooms.length === 0 && <option value="">Aucune chambre dispo</option>}
-                                    {rooms.map(room => (
-                                        <option key={room.id} value={room.id}>{room.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
+                        {/* ACTIVE STAY VIEW */}
+                        {!loading && activeStay && (
+                            <div style={{ padding: '20px', backgroundColor: '#ecfdf5', border: '1px solid #10b981', borderRadius: '8px', marginTop: '1rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+                                    <CheckCircle color="#10b981" />
+                                    <h4 style={{ margin: 0, color: '#047857' }}>Séjour en cours</h4>
+                                </div>
 
-                        <div className="form-group" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                            <div>
-                                <label>Date d'arrivée</label>
-                                <input
-                                    type="date"
-                                    name="check_in"
-                                    value={formData.check_in}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label>Date de départ souhaitée</label>
-                                <input
-                                    type="date"
-                                    name="check_out"
-                                    value={formData.check_out}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
-                        </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
+                                    <div><strong>Site :</strong> {activeStay.site}</div>
+                                    <div><strong>Chambre :</strong> {activeStay.rooms?.name || 'Inconnue'}</div>
+                                    <div><strong>Arrivée :</strong> {new Date(activeStay.check_in).toLocaleDateString()}</div>
+                                    <div><strong>Départ prévu :</strong> {new Date(activeStay.check_out).toLocaleDateString()}</div>
+                                </div>
 
-                        <div style={{ borderTop: '1px solid #eee', marginTop: '1.5rem', paddingTop: '1rem' }}>
-                            <h4 style={{ marginBottom: '1rem', color: '#4b5563' }}>Informations Complémentaires</h4>
+                                <div style={{ marginBottom: '15px' }}>
+                                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: '#047857' }}>Saisir la date de départ réelle :</label>
+                                    <input
+                                        type="date"
+                                        className="form-control"
+                                        value={realCheckoutDate}
+                                        onChange={(e) => setRealCheckoutDate(e.target.value)}
+                                        style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #10b981' }}
+                                        required
+                                    />
+                                </div>
 
-                            <div className="form-group" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                                <div>
-                                    <label>Motif de voyage</label>
-                                    <input type="text" name="travel_reason" value={formData.travel_reason} onChange={handleChange} placeholder="ex: Affaires, Tourisme..." required />
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                    <button
+                                        className="btn-primary"
+                                        style={{ backgroundColor: '#10b981', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                                        onClick={handleCheckout}
+                                        disabled={loading}
+                                    >
+                                        {loading ? 'TRAITEMENT...' : 'BOUCLER LE SÉJOUR ET ATTRIBUER LES POINTS'}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn-secondary"
+                                        style={{ padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: '1px solid #10b981', color: '#047857' }}
+                                        onClick={() => setShowPrintPreview(true)}
+                                    >
+                                        <Printer size={20} /> Aperçu de la fiche
+                                    </button>
                                 </div>
-                                <div>
-                                    <label>Mode de transport</label>
-                                    <input type="text" name="transport_mode" value={formData.transport_mode} onChange={handleChange} placeholder="ex: Voiture, Avion..." required />
-                                </div>
-                                <div style={{ gridColumn: 'span 1' }}>
-                                    <label>Venant de (Provenance)</label>
-                                    <input type="text" name="coming_from" value={formData.coming_from} onChange={handleChange} placeholder="ex: Cotonou, Paris..." />
-                                </div>
-                                <div style={{ gridColumn: 'span 1' }}>
-                                    <label>Allant à (Destination)</label>
-                                    <input type="text" name="going_to" value={formData.going_to} onChange={handleChange} placeholder="ex: Abidjan, Rome..." />
-                                </div>
-                                <div style={{ gridColumn: 'span 2' }}>
-                                    <label>Nombre d'enfants de moins de 15 ans accompagnant le chef de famille</label>
-                                    <input type="number" name="children_count" value={formData.children_count} onChange={handleChange} min="0" />
-                                </div>
+
+                                {/* Printable component with preview */}
+                                {showPrintPreview && (
+                                    <RegistrationFormPrint
+                                        client={client}
+                                        stay={activeStay}
+                                        onClose={() => setShowPrintPreview(false)}
+                                    />
+                                )}
                             </div>
+                        )}
 
-                            <div className="form-group" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                                <div>
-                                    <label>Domicile habituel</label>
-                                    <input type="text" name="usual_residence" value={formData.usual_residence} onChange={handleChange} placeholder="ex: Cotonou, Haie Vive" />
+                        {/* NEW STAY FORM */}
+                        {!loading && !activeStay && (
+                            <form onSubmit={handleCreateStay} className="admin-form" style={{ marginTop: '1rem' }}>
+                                <div className="form-group" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                    <div>
+                                        <label>Site</label>
+                                        <select name="site" value={formData.site} onChange={handleChange} disabled={!!userSite}>
+                                            <option value="Abomey-Calavi">Abomey-Calavi</option>
+                                            <option value="Allada">Allada</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label>Chambre à affecter</label>
+                                        <select
+                                            name="room_id"
+                                            value={formData.room_id}
+                                            onChange={handleChange}
+                                            required
+                                            disabled={rooms.length === 0}
+                                        >
+                                            {rooms.length === 0 && <option value="">Aucune chambre dispo</option>}
+                                            {rooms.map(room => (
+                                                <option key={room.id} value={room.id}>{room.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
-                                <div>
-                                    <label>Adresse complète</label>
-                                    <input type="text" name="full_address" value={formData.full_address} onChange={handleChange} placeholder="Quartier, Rue, Maison..." />
-                                </div>
-                            </div>
 
-                            <div className="form-group" style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem' }}>
-                                <div>
-                                    <label>Âge</label>
-                                    <input type="number" name="age" value={formData.age} onChange={handleChange} />
+                                <div className="form-group" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                    <div>
+                                        <label>Date d'arrivée</label>
+                                        <input
+                                            type="date"
+                                            name="check_in"
+                                            value={formData.check_in}
+                                            onChange={handleChange}
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label>Date de départ souhaitée</label>
+                                        <input
+                                            type="date"
+                                            name="check_out"
+                                            value={formData.check_out}
+                                            onChange={handleChange}
+                                            required
+                                        />
+                                    </div>
                                 </div>
-                                <div>
-                                    <label>Occupation</label>
-                                    <input type="text" name="occupation" value={formData.occupation} onChange={handleChange} />
-                                </div>
-                            </div>
 
-                            <div className="form-group" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                                <div>
-                                    <label>Profession</label>
-                                    <input type="text" name="profession" value={formData.profession} onChange={handleChange} />
-                                </div>
-                                <div>
-                                    <label>Téléphone (Contact)</label>
-                                    <input type="tel" name="phone" value={formData.phone} onChange={handleChange} />
-                                </div>
-                            </div>
+                                <div style={{ borderTop: '1px solid #eee', marginTop: '1.5rem', paddingTop: '1rem' }}>
+                                    <h4 style={{ marginBottom: '1rem', color: '#4b5563' }}>Informations Complémentaires</h4>
 
-                            <div className="form-group">
-                                <label>Email (Contact)</label>
-                                <input type="email" name="email" value={formData.email} onChange={handleChange} />
-                            </div>
-                        </div>
+                                    <div className="form-group" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                        <div>
+                                            <label>Motif de voyage</label>
+                                            <input type="text" name="travel_reason" value={formData.travel_reason} onChange={handleChange} placeholder="ex: Affaires, Tourisme..." required />
+                                        </div>
+                                        <div>
+                                            <label>Mode de transport</label>
+                                            <input type="text" name="transport_mode" value={formData.transport_mode} onChange={handleChange} placeholder="ex: Voiture, Avion..." required />
+                                        </div>
+                                        <div style={{ gridColumn: 'span 1' }}>
+                                            <label>Venant de (Provenance)</label>
+                                            <input type="text" name="coming_from" value={formData.coming_from} onChange={handleChange} placeholder="ex: Cotonou, Paris..." />
+                                        </div>
+                                        <div style={{ gridColumn: 'span 1' }}>
+                                            <label>Allant à (Destination)</label>
+                                            <input type="text" name="going_to" value={formData.going_to} onChange={handleChange} placeholder="ex: Abidjan, Rome..." />
+                                        </div>
+                                        <div style={{ gridColumn: 'span 2' }}>
+                                            <label>Nombre d'enfants de moins de 15 ans accompagnant le chef de famille</label>
+                                            <input type="number" name="children_count" value={formData.children_count} onChange={handleChange} min="0" />
+                                        </div>
+                                    </div>
 
-                        <div className="form-actions" style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
-                            <button type="button" className="btn-secondary" onClick={onCancel} disabled={loading}>
-                                Annuler
-                            </button>
-                            <button type="submit" className="btn-primary" disabled={loading || rooms.length === 0}>
-                                {loading ? 'Création...' : 'Créer le séjour'}
-                            </button>
-                        </div>
-                    </form>
+                                    <div className="form-group" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                        <div>
+                                            <label>Domicile habituel</label>
+                                            <input type="text" name="usual_residence" value={formData.usual_residence} onChange={handleChange} placeholder="ex: Cotonou, Haie Vive" />
+                                        </div>
+                                        <div>
+                                            <label>Adresse complète</label>
+                                            <input type="text" name="full_address" value={formData.full_address} onChange={handleChange} placeholder="Quartier, Rue, Maison..." />
+                                        </div>
+                                    </div>
+
+                                    <div className="form-group" style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem' }}>
+                                        <div>
+                                            <label>Âge</label>
+                                            <input type="number" name="age" value={formData.age} onChange={handleChange} />
+                                        </div>
+                                        <div>
+                                            <label>Occupation</label>
+                                            <input type="text" name="occupation" value={formData.occupation} onChange={handleChange} />
+                                        </div>
+                                    </div>
+
+                                    <div className="form-group" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                        <div>
+                                            <label>Profession</label>
+                                            <input type="text" name="profession" value={formData.profession} onChange={handleChange} />
+                                        </div>
+                                        <div>
+                                            <label>Téléphone (Contact)</label>
+                                            <input type="tel" name="phone" value={formData.phone} onChange={handleChange} />
+                                        </div>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Email (Contact)</label>
+                                        <input type="email" name="email" value={formData.email} onChange={handleChange} />
+                                    </div>
+                                </div>
+
+                                <div className="form-actions" style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+                                    <button type="button" className="btn-secondary" onClick={onCancel} disabled={loading}>
+                                        Annuler
+                                    </button>
+                                    <button type="submit" className="btn-primary" disabled={loading || rooms.length === 0}>
+                                        {loading ? 'Création...' : 'Créer le séjour'}
+                                    </button>
+                                </div>
+                            </form>
+                        )}
+                    </>
                 )}
             </div>
         </div>
