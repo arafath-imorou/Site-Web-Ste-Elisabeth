@@ -3,9 +3,9 @@ import { supabase } from '../../lib/supabase';
 import { X, CheckCircle, Printer } from 'lucide-react';
 import RegistrationFormPrint from './RegistrationFormPrint';
 
-const StayForm = ({ client, onSave, onCancel }) => {
+const StayForm = ({ client, userSite, onSave, onCancel }) => {
     const [formData, setFormData] = useState({
-        site: 'Abomey-Calavi',
+        site: userSite || 'Abomey-Calavi',
         room_id: '',
         check_in: new Date().toISOString().split('T')[0],
         check_out: '',
@@ -25,7 +25,7 @@ const StayForm = ({ client, onSave, onCancel }) => {
 
     const [rooms, setRooms] = useState([]);
     const [activeStay, setActiveStay] = useState(null);
-    const [realCheckoutDate, setRealCheckoutDate] = useState('');
+    const [realCheckoutDate, setRealCheckoutDate] = useState(new Date().toISOString().split('T')[0]);
     const [showPrintPreview, setShowPrintPreview] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -97,8 +97,11 @@ const StayForm = ({ client, onSave, onCancel }) => {
 
             if (error) throw error;
             setRooms(data || []);
-            if (data && data.length > 0 && !formData.room_id) {
+            // Pre-select first room or reset if none
+            if (data && data.length > 0) {
                 setFormData(prev => ({ ...prev, room_id: data[0].id }));
+            } else {
+                setFormData(prev => ({ ...prev, room_id: '' }));
             }
         } catch (err) {
             console.error('Error fetching rooms:', err);
@@ -153,6 +156,15 @@ const StayForm = ({ client, onSave, onCancel }) => {
                 }]);
 
             if (insertError) throw insertError;
+
+            // 3. Mark room as unavailable
+            const { error: roomUpdateError } = await supabase
+                .from('rooms')
+                .update({ is_available: false })
+                .eq('id', formData.room_id);
+
+            if (roomUpdateError) throw roomUpdateError;
+
             onSave();
         } catch (err) {
             console.error('Error creating stay:', err);
@@ -180,8 +192,21 @@ const StayForm = ({ client, onSave, onCancel }) => {
 
             if (updateError) throw updateError;
 
-            // 2. Add loyalty points to the client
-            const pointsToAdd = 100; // Fixed amount for now, could be dynamic based on stay length
+            // 2. Mark room as available again
+            const { error: roomUpdateError } = await supabase
+                .from('rooms')
+                .update({ is_available: true })
+                .eq('id', activeStay.room_id);
+
+            if (roomUpdateError) throw roomUpdateError;
+
+            // 3. Add loyalty points to the client
+            const checkInDate = new Date(activeStay.check_in);
+            const checkOutDate = new Date(realCheckoutDate);
+            const diffTime = Math.abs(checkOutDate - checkInDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1; // Minimum 1 night
+
+            const pointsToAdd = diffDays * 20;
             const newPoints = (client.loyalty_points || 0) + pointsToAdd;
 
             const { error: clientError } = await supabase
@@ -190,6 +215,8 @@ const StayForm = ({ client, onSave, onCancel }) => {
                 .eq('id', client.id);
 
             if (clientError) throw clientError;
+
+            alert(`Séjour terminé ! ${pointsToAdd} points ont été ajoutés au client.`);
 
             onSave();
         } catch (err) {
@@ -275,7 +302,7 @@ const StayForm = ({ client, onSave, onCancel }) => {
                         <div className="form-group" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                             <div>
                                 <label>Site</label>
-                                <select name="site" value={formData.site} onChange={handleChange}>
+                                <select name="site" value={formData.site} onChange={handleChange} disabled={!!userSite}>
                                     <option value="Abomey-Calavi">Abomey-Calavi</option>
                                     <option value="Allada">Allada</option>
                                 </select>

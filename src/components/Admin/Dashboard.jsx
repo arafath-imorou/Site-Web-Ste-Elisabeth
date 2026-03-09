@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { LayoutDashboard, Bed, CalendarCheck, Image as ImageIcon, Briefcase, MessageSquare, LogOut, Plus, Trash2, Edit, Sparkles, Cog, Utensils, Eye, Users } from 'lucide-react';
+import { LayoutDashboard, Bed, CalendarCheck, Image as ImageIcon, Briefcase, MessageSquare, LogOut, Plus, Trash2, Edit, Sparkles, Cog, Utensils, Eye, Users, CheckCircle } from 'lucide-react';
 import Login from './Login';
 import RoomForm from './RoomForm';
 import ServiceForm from './ServiceForm';
@@ -25,6 +25,8 @@ const Dashboard = () => {
     const [offers, setOffers] = useState([]);
     const [gallery, setGallery] = useState([]);
     const [clients, setClients] = useState([]);
+    const [activeStays, setActiveStays] = useState([]);
+    const [userSite, setUserSite] = useState(null);
     const [loading, setLoading] = useState(true);
     const [showRoomForm, setShowRoomForm] = useState(false);
     const [showServiceForm, setShowServiceForm] = useState(false);
@@ -57,7 +59,10 @@ const Dashboard = () => {
             if (activeTab === 'menus') fetchMenus();
             if (activeTab === 'offers') fetchOffers();
             if (activeTab === 'gallery') fetchGallery();
-            if (activeTab === 'clients') fetchClients();
+            if (activeTab === 'clients') {
+                fetchClients();
+                fetchActiveStays();
+            }
         }
     }, [user, activeTab]);
 
@@ -73,39 +78,43 @@ const Dashboard = () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
             setUser(user);
-            const userRole = await fetchRole(user.id);
+            const { role: userRole, site: siteName } = await fetchUserInfo(user.id);
             setRole(userRole);
-
-            // If reception role, rooms is not allowed, switch to bookings
-            if (userRole === 'reception' && activeTab === 'rooms') {
-                setActiveTab('bookings');
-            }
+            setUserSite(siteName);
         }
         setLoading(false);
     };
 
-    const fetchRole = async (userId) => {
+    const fetchUserInfo = async (userId) => {
         const { data, error } = await supabase
             .from('profiles')
-            .select('role')
+            .select('role, site')
             .eq('id', userId)
             .single();
 
         if (error) {
-            console.error('Error fetching role:', error);
-            return 'reception'; // Default to restricted if error
+            console.error('Error fetching user info:', error);
+            return { role: 'reception', site: null }; // Default to restricted if error
         }
-        return data.role;
+        return data;
     };
 
     const fetchRooms = async () => {
-        const { data, error } = await supabase.from('rooms').select('*').order('created_at', { ascending: false });
+        let query = supabase.from('rooms').select('*');
+        if (userSite) {
+            query = query.eq('site', userSite);
+        }
+        const { data, error } = await query.order('created_at', { ascending: false });
         if (error) console.error('Fetch Rooms Error:', error);
         setRooms(data || []);
     };
 
     const fetchReservations = async () => {
-        const { data, error } = await supabase.from('reservations').select('*, rooms(name)').order('created_at', { ascending: false });
+        let query = supabase.from('reservations').select('*, rooms(name)');
+        if (userSite) {
+            query = query.eq('site', userSite);
+        }
+        const { data, error } = await query.order('created_at', { ascending: false });
         if (error) console.error('Fetch Reservations Error:', error);
         setReservations(data || []);
     };
@@ -144,6 +153,16 @@ const Dashboard = () => {
         const { data, error } = await supabase.from('clients').select('*').order('created_at', { ascending: false });
         if (error) console.error('Fetch Clients Error:', error);
         setClients(data || []);
+    };
+
+    const fetchActiveStays = async () => {
+        let query = supabase.from('stays').select('client_id').eq('status', 'active');
+        if (userSite) {
+            query = query.eq('site', userSite);
+        }
+        const { data, error } = await query;
+        if (error) console.error('Fetch Active Stays Error:', error);
+        setActiveStays(data?.map(s => s.client_id) || []);
     };
 
     const fetchClientHistory = async (clientId) => {
@@ -264,7 +283,8 @@ const Dashboard = () => {
             {showStayForm && (
                 <StayForm
                     client={managingStayFor}
-                    onSave={() => { setShowStayForm(false); setManagingStayFor(null); fetchClients(); }}
+                    userSite={userSite}
+                    onSave={() => { setShowStayForm(false); setManagingStayFor(null); fetchClients(); fetchActiveStays(); }}
                     onCancel={() => { setShowStayForm(false); setManagingStayFor(null); }}
                 />
             )}
@@ -423,7 +443,7 @@ const Dashboard = () => {
                 </div>
 
                 <nav className="sidebar-nav">
-                    {role === 'admin' && (
+                    {(role === 'admin' || role === 'reception') && (
                         <button className={activeTab === 'rooms' ? 'active' : ''} onClick={() => setActiveTab('rooms')}>
                             <Bed size={20} /> <span>Gestion des Chambres</span>
                         </button>
@@ -471,27 +491,27 @@ const Dashboard = () => {
                             <LogOut size={18} /> <span>Déconnexion</span>
                         </button>
                     </div>
-                    {activeTab === 'rooms' && (
+                    {activeTab === 'rooms' && role === 'admin' && (
                         <button className="btn-primary btn-add" onClick={() => setShowRoomForm(true)}>
                             <Plus size={18} /> Ajouter une chambre
                         </button>
                     )}
-                    {activeTab === 'services' && (
+                    {activeTab === 'services' && role === 'admin' && (
                         <button className="btn-primary btn-add" onClick={() => setShowServiceForm(true)}>
                             <Plus size={18} /> Ajouter un service
                         </button>
                     )}
-                    {activeTab === 'menus' && (
+                    {activeTab === 'menus' && role === 'admin' && (
                         <button className="btn-primary btn-add" onClick={() => setShowMenuForm(true)}>
                             <Plus size={18} /> Ajouter un plat
                         </button>
                     )}
-                    {activeTab === 'offers' && (
+                    {activeTab === 'offers' && role === 'admin' && (
                         <button className="btn-primary btn-add" onClick={() => setShowOfferForm(true)}>
                             <Plus size={18} /> Ajouter une offre
                         </button>
                     )}
-                    {activeTab === 'gallery' && (
+                    {activeTab === 'gallery' && role === 'admin' && (
                         <button className="btn-primary btn-add" onClick={() => setShowGalleryForm(true)}>
                             <Plus size={18} /> Ajouter à la galerie
                         </button>
@@ -514,7 +534,7 @@ const Dashboard = () => {
                                         <th>Site</th>
                                         <th>Prix</th>
                                         <th>Capacité</th>
-                                        <th>Actions</th>
+                                        {role === 'admin' && <th>Actions</th>}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -540,10 +560,12 @@ const Dashboard = () => {
                                                 )}
                                             </td>
                                             <td>{room.capacity} pers.</td>
-                                            <td className="actions">
-                                                <button className="edit-btn" onClick={() => { setEditingRoom(room); setShowRoomForm(true); }}><Edit size={16} /></button> {/* Updated edit button */}
-                                                <button className="delete-btn" onClick={() => handleDeleteRoom(room.id)}><Trash2 size={16} /></button> {/* Updated delete button */}
-                                            </td>
+                                            {role === 'admin' && (
+                                                <td className="actions">
+                                                    <button className="edit-btn" onClick={() => { setEditingRoom(room); setShowRoomForm(true); }}><Edit size={16} /></button> {/* Updated edit button */}
+                                                    <button className="delete-btn" onClick={() => handleDeleteRoom(room.id)}><Trash2 size={16} /></button> {/* Updated delete button */}
+                                                </td>
+                                            )}
                                         </tr>
                                     ))}
                                     {rooms.length === 0 && <tr><td colSpan="5" className="empty-state">Aucune chambre trouvée.</td></tr>}
@@ -620,9 +642,15 @@ const Dashboard = () => {
                                             <td><span className="status confirmed">{client.loyalty_points} pts</span></td>
                                             <td>{new Date(client.created_at).toLocaleDateString()}</td>
                                             <td className="actions" style={{ display: 'flex', gap: '5px' }}>
-                                                <button className="btn-secondary" style={{ padding: '4px 8px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px' }} onClick={() => { setManagingStayFor(client); setShowStayForm(true); }}>
-                                                    <Bed size={14} /> Séjour
-                                                </button>
+                                                {activeStays.includes(client.id) ? (
+                                                    <button className="btn-primary" style={{ padding: '4px 8px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#10b981' }} onClick={() => { setManagingStayFor(client); setShowStayForm(true); }}>
+                                                        <CheckCircle size={14} /> Clôturer
+                                                    </button>
+                                                ) : (
+                                                    <button className="btn-secondary" style={{ padding: '4px 8px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px' }} onClick={() => { setManagingStayFor(client); setShowStayForm(true); }}>
+                                                        <Bed size={14} /> Séjour
+                                                    </button>
+                                                )}
                                                 <button className="edit-btn" title="Voir les détails" onClick={() => setViewingClient(client)}><Eye size={16} /></button>
                                                 <button className="edit-btn" title="Modifier" onClick={() => { setEditingClient(client); setShowClientForm(true); }}><Edit size={16} /></button>
                                                 <button className="delete-btn" title="Supprimer" onClick={() => handleDeleteClient(client.id)}><Trash2 size={16} /></button>
