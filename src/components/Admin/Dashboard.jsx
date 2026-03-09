@@ -56,6 +56,25 @@ const Dashboard = () => {
 
     useEffect(() => {
         if (user) {
+            loadUserProfile(user.id);
+        }
+    }, [user]);
+
+    const loadUserProfile = async (userId) => {
+        const { role: userRole, site: siteName } = await fetchUserInfo(userId);
+        setRole(userRole);
+        setUserSite(siteName);
+
+        // Default tab based on role
+        if (userRole === 'reception') {
+            setActiveTab('bookings');
+        } else {
+            setActiveTab('rooms');
+        }
+    };
+
+    useEffect(() => {
+        if (user && role) {
             if (activeTab === 'rooms') fetchRooms();
             if (activeTab === 'bookings') fetchReservations();
             if (activeTab === 'messages') fetchMessages();
@@ -82,15 +101,6 @@ const Dashboard = () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
             setUser(user);
-            const { role: userRole, site: siteName } = await fetchUserInfo(user.id);
-            setRole(userRole);
-            setUserSite(siteName);
-            // Default tab based on role
-            if (userRole === 'reception') {
-                setActiveTab('bookings');
-            } else {
-                setActiveTab('rooms');
-            }
         }
         setLoading(false);
     };
@@ -240,6 +250,9 @@ const Dashboard = () => {
     const handleLogout = async () => {
         await supabase.auth.signOut();
         setUser(null);
+        setRole(null);
+        setUserSite(null);
+        setActiveTab('');
     };
 
     if (loading) return <div className="admin-loading">Chargement...</div>;
