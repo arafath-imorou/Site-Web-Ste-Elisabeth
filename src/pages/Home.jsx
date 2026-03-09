@@ -69,6 +69,11 @@ const Home = () => {
         } catch (err) {
             console.error('Availability check error:', err);
             setAvailabilityStatus(null);
+            if (err.message === 'Failed to fetch') {
+                alert('Erreur réseau (Disponibilité) : Impossible de contacter le serveur. Vérifiez votre connexion ou désactivez vos bloqueurs de publicité.');
+            } else {
+                alert('Erreur: ' + (err.message || err));
+            }
         }
     };
 
