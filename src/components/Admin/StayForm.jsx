@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { X, CheckCircle, Printer } from 'lucide-react';
+import { X, CheckCircle, Printer, FileDown } from 'lucide-react';
 import RegistrationFormPrint from './RegistrationFormPrint';
 
 const StayForm = ({ client, userSite, onSave, onCancel }) => {

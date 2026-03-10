@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { LayoutDashboard, Bed, CalendarCheck, Image as ImageIcon, Briefcase, MessageSquare, LogOut, Plus, Trash2, Edit, Sparkles, Cog, Utensils, Eye, Users, CheckCircle, Printer, Search, LayoutGrid } from 'lucide-react';
+import { LayoutDashboard, Bed, CalendarCheck, Image as ImageIcon, Briefcase, MessageSquare, LogOut, Plus, Trash2, Edit, Sparkles, Cog, Utensils, Eye, Users, CheckCircle, Printer, Search, LayoutGrid, FileDown } from 'lucide-react';
 import Login from './Login';
 import RoomForm from './RoomForm';
 import ServiceForm from './ServiceForm';
@@ -181,7 +181,7 @@ const Dashboard = () => {
 
     const fetchActiveStays = async () => {
         let query = supabase.from('stays')
-            .select('client_id, room_id, room_number, status, check_in, check_out, clients(first_name, last_name)')
+            .select('client_id, room_id, room_number, status, check_in, check_out, registration_form_url, clients(first_name, last_name)')
             .eq('status', 'active');
 
         if (userSite) {
@@ -751,9 +751,26 @@ const Dashboard = () => {
                                                 <td><span className="status" style={{ backgroundColor: '#f3f4f6', color: '#374151', padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>{client.site === 'Abomey-Calavi' ? 'ABC' : client.site === 'Allada' ? 'ALD' : '-'}</span></td>
                                                 <td className="actions" style={{ display: 'flex', gap: '5px' }}>
                                                     {activeStays.includes(client.id) ? (
-                                                        <button className="btn-primary" style={{ padding: '4px 8px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#10b981' }} onClick={() => { setManagingStayFor(client); setShowStayForm(true); }}>
-                                                            <CheckCircle size={14} /> Clôturer
-                                                        </button>
+                                                        <>
+                                                            {(() => {
+                                                                const activeStay = activeStaysWithClients.find(s => s.client_id === client.id);
+                                                                return activeStay?.registration_form_url && (
+                                                                    <a
+                                                                        href={activeStay.registration_form_url}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className="edit-btn"
+                                                                        title="Voir la fiche PDF"
+                                                                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                                    >
+                                                                        <FileDown size={16} />
+                                                                    </a>
+                                                                );
+                                                            })()}
+                                                            <button className="btn-primary" style={{ padding: '4px 8px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#10b981' }} onClick={() => { setManagingStayFor(client); setShowStayForm(true); }}>
+                                                                <CheckCircle size={14} /> Clôturer
+                                                            </button>
+                                                        </>
                                                     ) : (
                                                         <button className="btn-secondary" style={{ padding: '4px 8px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px' }} onClick={() => { setManagingStayFor(client); setShowStayForm(true); }}>
                                                             <Bed size={14} /> Séjour
