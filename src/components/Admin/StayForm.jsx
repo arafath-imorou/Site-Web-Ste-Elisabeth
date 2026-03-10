@@ -317,7 +317,7 @@ const StayForm = ({ client, userSite, onSave, onCancel }) => {
             const diffTime = Math.abs(checkOutDate - checkInDate);
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1; // Minimum 1 night
 
-            const pointsToAdd = diffDays * 20;
+            const pointsToAdd = diffDays;
             const newPoints = (client.loyalty_points || 0) + pointsToAdd;
 
             console.log(`Adding ${pointsToAdd} points to client ${client.id}. New total: ${newPoints}`);
