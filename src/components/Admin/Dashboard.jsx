@@ -445,6 +445,7 @@ const Dashboard = () => {
                                                     <th>Période</th>
                                                     <th>Site</th>
                                                     <th>Chambre</th>
+                                                    <th>FICHE</th>
                                                     <th>Statut</th>
                                                     <th>Actions</th>
                                                 </tr>
@@ -457,6 +458,21 @@ const Dashboard = () => {
                                                         </td>
                                                         <td>{stay.site}</td>
                                                         <td>{stay.rooms?.name || '-'} {stay.room_number ? `(N° ${stay.room_number})` : ''}</td>
+                                                        <td>
+                                                            {stay.registration_form_url ? (
+                                                                <a
+                                                                    href={stay.registration_form_url}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="status confirmed"
+                                                                    style={{ textDecoration: 'none', fontSize: '0.75rem', fontWeight: 'bold' }}
+                                                                >
+                                                                    PDF
+                                                                </a>
+                                                            ) : (
+                                                                <span style={{ opacity: 0.3 }}>-</span>
+                                                            )}
+                                                        </td>
                                                         <td>
                                                             <span className={`status ${stay.status === 'completed' ? 'confirmed' : stay.status}`}>
                                                                 {stay.status === 'completed' ? 'Terminé' : stay.status === 'active' ? 'En cours' : stay.status}

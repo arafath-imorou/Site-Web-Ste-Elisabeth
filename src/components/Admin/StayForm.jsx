@@ -361,14 +361,23 @@ const StayForm = ({ client, userSite, onSave, onCancel }) => {
                         <p style={{ marginBottom: '10px', color: '#374151' }}>{successMsg}</p>
 
                         {activeStay?.registration_form_url && (
-                            <div style={{ marginBottom: '25px' }}>
+                            <div style={{ marginBottom: '25px', textAlign: 'center' }}>
                                 <a
                                     href={activeStay.registration_form_url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    style={{ color: '#047857', fontWeight: 'bold', textDecoration: 'underline' }}
+                                    className="status confirmed"
+                                    style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                        padding: '8px 20px',
+                                        textDecoration: 'none',
+                                        fontWeight: 'bold',
+                                        fontSize: '1rem'
+                                    }}
                                 >
-                                    Voir la fiche PDF enregistrée
+                                    <FileDown size={20} /> FICHE (PDF)
                                 </a>
                             </div>
                         )}
