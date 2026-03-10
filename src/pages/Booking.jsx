@@ -23,6 +23,7 @@ const Booking = () => {
     const [loading, setLoading] = useState(true);
     const [bookingData, setBookingData] = useState({
         room_id: initialRoomId || '',
+        room_number: '',
         site: initialSite,
         check_in: initialCheckIn,
         check_out: initialCheckOut,
@@ -141,6 +142,12 @@ const Booking = () => {
             const currentCheckOut = name === 'check_out' ? value : bookingData.check_out;
 
             newData.total_price = calculateTotalPrice(currentRoomId, currentCheckIn, currentCheckOut);
+
+            // Reset room_number if room_id changes
+            if (name === 'room_id') {
+                const selectedRoom = rooms.find(r => r.id === value);
+                newData.room_number = (selectedRoom?.site === 'Allada' && selectedRoom?.room_numbers?.length > 0) ? selectedRoom.room_numbers[0] : '';
+            }
         }
         setBookingData(newData);
     };
@@ -165,7 +172,8 @@ const Booking = () => {
                 customer_phone: bookingData.customer_phone,
                 total_price: bookingData.total_price,
                 notes: finalNotes,
-                room_id: bookingData.room_id.replace('-ventillee', '').replace('-climee', '')
+                room_id: bookingData.room_id.replace('-ventillee', '').replace('-climee', ''),
+                room_number: bookingData.room_number
             };
             const { error } = await supabase.from('reservations').insert([submitData]);
             if (error) throw error;
@@ -254,6 +262,19 @@ Merci de confirmer ma demande.`;
                                             </select>
                                         </div>
                                     </div>
+                                    {bookingData.site === 'Allada' && bookingData.room_id && rooms.find(r => r.id === bookingData.room_id.replace('-ventillee', '').replace('-climee', ''))?.room_numbers && (
+                                        <div className="form-group">
+                                            <label>Numéro de chambre</label>
+                                            <div className="select-wrapper">
+                                                <Home side={18} className="icon" />
+                                                <select name="room_number" value={bookingData.room_number} onChange={handleInputChange}>
+                                                    {rooms.find(r => r.id === bookingData.room_id.replace('-ventillee', '').replace('-climee', '')).room_numbers.map(num => (
+                                                        <option key={num} value={num}>Chambre {num}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    )}
                                     <div className="form-group">
                                         <label>{isConference ? "Date de début" : "Date d'arrivée"}</label>
                                         <input type="date" name="check_in" value={bookingData.check_in} onChange={handleInputChange} />
@@ -349,7 +370,10 @@ Merci de confirmer ma demande.`;
                                     </div>
                                     <div className="summary-item">
                                         <span>{isConference ? "Espace" : "Hébergement"}</span>
-                                        <strong>{rooms.find(r => r.id === bookingData.room_id)?.name}</strong>
+                                        <strong>
+                                            {rooms.find(r => r.id === bookingData.room_id.replace('-ventillee', '').replace('-climee', ''))?.name}
+                                            {bookingData.room_number && ` (Chambre ${bookingData.room_number})`}
+                                        </strong>
                                     </div>
                                     <div className="summary-item">
                                         <span>{isConference ? "Date de l'événement" : "Séjour"}</span>

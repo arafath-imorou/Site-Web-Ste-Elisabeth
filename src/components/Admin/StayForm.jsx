@@ -7,6 +7,7 @@ const StayForm = ({ client, userSite, onSave, onCancel }) => {
     const [formData, setFormData] = useState({
         site: userSite || 'Abomey-Calavi',
         room_id: '',
+        room_number: '',
         check_in: new Date().toISOString().split('T')[0],
         check_out: '',
         travel_reason: '',
@@ -101,9 +102,13 @@ const StayForm = ({ client, userSite, onSave, onCancel }) => {
             setRooms(data || []);
             // Pre-select first room or reset if none
             if (data && data.length > 0) {
-                setFormData(prev => ({ ...prev, room_id: data[0].id }));
+                setFormData(prev => ({
+                    ...prev,
+                    room_id: data[0].id,
+                    room_number: (data[0].site === 'Allada' && data[0].room_numbers?.length > 0) ? data[0].room_numbers[0] : ''
+                }));
             } else {
-                setFormData(prev => ({ ...prev, room_id: '' }));
+                setFormData(prev => ({ ...prev, room_id: '', room_number: '' }));
             }
         } catch (err) {
             console.error('Error fetching rooms:', err);
@@ -112,7 +117,16 @@ const StayForm = ({ client, userSite, onSave, onCancel }) => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+        if (name === 'room_id') {
+            const selectedRoom = rooms.find(r => r.id === value);
+            setFormData(prev => ({
+                ...prev,
+                room_id: value,
+                room_number: (selectedRoom?.site === 'Allada' && selectedRoom?.room_numbers?.length > 0) ? selectedRoom.room_numbers[0] : ''
+            }));
+        } else {
+            setFormData({ ...formData, [name]: value });
+        }
     };
 
     const handleCreateStay = async (e) => {
@@ -141,6 +155,7 @@ const StayForm = ({ client, userSite, onSave, onCancel }) => {
                 .insert([{
                     client_id: client.id,
                     room_id: formData.room_id,
+                    room_number: formData.room_number,
                     site: formData.site,
                     check_in: formData.check_in,
                     check_out: formData.check_out,
@@ -287,7 +302,8 @@ const StayForm = ({ client, userSite, onSave, onCancel }) => {
 
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
                                     <div><strong>Site :</strong> {activeStay.site}</div>
-                                    <div><strong>Chambre :</strong> {activeStay.rooms?.name || 'Inconnue'}</div>
+                                    <div><strong>Catégorie :</strong> {activeStay.rooms?.name || 'Inconnue'}</div>
+                                    {activeStay.room_number && <div><strong>Chambre N° :</strong> {activeStay.room_number}</div>}
                                     <div><strong>Arrivée :</strong> {new Date(activeStay.check_in).toLocaleDateString()}</div>
                                     <div><strong>Départ prévu :</strong> {new Date(activeStay.check_out).toLocaleDateString()}</div>
                                 </div>
@@ -360,6 +376,21 @@ const StayForm = ({ client, userSite, onSave, onCancel }) => {
                                             ))}
                                         </select>
                                     </div>
+                                    {formData.site === 'Allada' && formData.room_id && rooms.find(r => r.id === formData.room_id)?.room_numbers && (
+                                        <div>
+                                            <label>Numéro de Chambre</label>
+                                            <select
+                                                name="room_number"
+                                                value={formData.room_number}
+                                                onChange={handleChange}
+                                                required
+                                            >
+                                                {rooms.find(r => r.id === formData.room_id).room_numbers.map(num => (
+                                                    <option key={num} value={num}>{num}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="form-group" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>

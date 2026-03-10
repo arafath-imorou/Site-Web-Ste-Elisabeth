@@ -181,7 +181,7 @@ const Dashboard = () => {
 
     const fetchActiveStays = async () => {
         let query = supabase.from('stays')
-            .select('client_id, room_id, status, check_in, check_out, clients(first_name, last_name)')
+            .select('client_id, room_id, room_number, status, check_in, check_out, clients(first_name, last_name)')
             .eq('status', 'active');
 
         if (userSite) {
@@ -345,7 +345,7 @@ const Dashboard = () => {
                                 <strong>Téléphone :</strong> {viewingReservation.customer_phone}
                             </div>
                             <div className="form-group">
-                                <strong>Chambre :</strong> {viewingReservation.rooms?.name}
+                                <strong>Chambre :</strong> {viewingReservation.rooms?.name} {viewingReservation.room_number ? `(N° ${viewingReservation.room_number})` : ''}
                             </div>
                             <div className="form-group">
                                 <strong>Site :</strong> {viewingReservation.site}
@@ -456,7 +456,7 @@ const Dashboard = () => {
                                                             {new Date(stay.check_in).toLocaleDateString()} au {new Date(stay.check_out).toLocaleDateString()}
                                                         </td>
                                                         <td>{stay.site}</td>
-                                                        <td>{stay.rooms?.name || '-'}</td>
+                                                        <td>{stay.rooms?.name || '-'} {stay.room_number ? `(N° ${stay.room_number})` : ''}</td>
                                                         <td>
                                                             <span className={`status ${stay.status === 'completed' ? 'confirmed' : stay.status}`}>
                                                                 {stay.status === 'completed' ? 'Terminé' : stay.status === 'active' ? 'En cours' : stay.status}
@@ -649,7 +649,8 @@ const Dashboard = () => {
                                 <thead>
                                     <tr>
                                         <th>Client</th>
-                                        <th>Chambre</th>
+                                        <th>Catégorie</th>
+                                        <th>N° Chambre</th>
                                         <th>Arrivée</th>
                                         <th>Départ</th>
                                         <th>Statut</th>
@@ -661,6 +662,7 @@ const Dashboard = () => {
                                         <tr key={res.id}>
                                             <td>{res.customer_name}</td>
                                             <td>{res.rooms?.name}</td>
+                                            <td>{res.room_number || '-'}</td>
                                             <td>{res.check_in}</td>
                                             <td>{res.check_out}</td>
                                             <td><span className={`status ${res.status}`}>{res.status}</span></td>
@@ -897,7 +899,55 @@ const Dashboard = () => {
                                             <div className="stat-item reserve">Réservé: {stats.reserve}</div>
                                         </div>
                                         <div className="room-status-grid">
-                                            {siteRooms.map(room => {
+                                            {siteRooms.flatMap(room => {
+                                                if (site === 'Allada' && room.room_numbers?.length > 0) {
+                                                    return room.room_numbers.map(roomNum => {
+                                                        const stay = activeStaysWithClients.find(s => s.room_id === room.id && s.room_number === roomNum);
+                                                        const reservation = reservations.find(res => res.room_id === room.id && res.room_number === roomNum && res.status === 'confirmed');
+
+                                                        let status = 'libre';
+                                                        let guest = '';
+                                                        let dates = '';
+
+                                                        if (stay) {
+                                                            status = 'occupe';
+                                                            guest = `${stay.clients?.first_name} ${stay.clients?.last_name}`;
+                                                            dates = `${new Date(stay.check_in).toLocaleDateString()} - ${new Date(stay.check_out).toLocaleDateString()}`;
+                                                        } else if (reservation) {
+                                                            status = 'reserve';
+                                                            guest = reservation.customer_name;
+                                                            dates = `${new Date(reservation.check_in).toLocaleDateString()} - ${new Date(reservation.check_out).toLocaleDateString()}`;
+                                                        } else if (!room.is_available) {
+                                                            status = 'maintenance';
+                                                        }
+
+                                                        return (
+                                                            <div key={`${room.id}-${roomNum}`} className={`room-status-card ${status}`}>
+                                                                <div className="room-card-header">
+                                                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                                        <span className="room-number">{roomNum}</span>
+                                                                        <span style={{ fontSize: '0.6rem', opacity: 0.6 }}>{room.name}</span>
+                                                                    </div>
+                                                                    <span className="status-badge">{status}</span>
+                                                                </div>
+                                                                <div className="room-card-content">
+                                                                    {guest ? (
+                                                                        <>
+                                                                            <span className="guest-name" title={guest}>{guest}</span>
+                                                                            <div style={{ fontSize: '0.7rem', opacity: 0.7, marginTop: '4px' }}>
+                                                                                {dates}
+                                                                            </div>
+                                                                        </>
+                                                                    ) : (
+                                                                        <span style={{ opacity: 0.5, fontSize: '0.75rem' }}>Aucun occupant</span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    });
+                                                }
+
+                                                // Default behavior for other sites or rooms without numbers
                                                 const stay = activeStaysWithClients.find(s => s.room_id === room.id);
                                                 const reservation = reservations.find(res => res.room_id === room.id && res.status === 'confirmed');
 
