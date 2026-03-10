@@ -196,7 +196,7 @@ const Dashboard = () => {
     const fetchClientHistory = async (clientId) => {
         const { data, error } = await supabase
             .from('stays')
-            .select('*, rooms(name)')
+            .select('*, rooms(name), registration_form_url')
             .eq('client_id', clientId)
             .order('check_in', { ascending: false });
         if (error) console.error('Fetch Client History Error:', error);
