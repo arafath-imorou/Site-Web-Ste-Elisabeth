@@ -92,20 +92,49 @@ const StayForm = ({ client, userSite, onSave, onCancel }) => {
 
     const fetchRooms = async (site) => {
         try {
-            const { data, error } = await supabase
+            // 1. Fetch available room categories
+            const { data: roomsData, error: roomsError } = await supabase
                 .from('rooms')
                 .select('*')
                 .eq('site', site)
-                .eq('is_available', true); // Note: might want to refine availability based on dates
+                .is('is_available', true);
 
-            if (error) throw error;
-            setRooms(data || []);
+            if (roomsError) throw roomsError;
+
+            // 2. Fetch all active stays to identify occupied room numbers (especially for Allada shared rooms)
+            const { data: activeStays, error: staysError } = await supabase
+                .from('stays')
+                .select('room_number')
+                .eq('site', site)
+                .eq('status', 'active');
+
+            if (staysError) throw staysError;
+
+            const occupiedNumbers = activeStays?.map(s => s.room_number).filter(Boolean) || [];
+
+            // 3. Filter rooms and their numbers
+            let filteredRooms = roomsData || [];
+            if (site === 'Allada') {
+                // For Allada, we filter room_numbers array within each category
+                filteredRooms = filteredRooms.map(room => {
+                    if (room.room_numbers) {
+                        return {
+                            ...room,
+                            room_numbers: room.room_numbers.filter(num => !occupiedNumbers.includes(num))
+                        };
+                    }
+                    return room;
+                }).filter(room => !room.room_numbers || room.room_numbers.length > 0);
+            }
+
+            setRooms(filteredRooms);
+
             // Pre-select first room or reset if none
-            if (data && data.length > 0) {
+            if (filteredRooms.length > 0) {
                 setFormData(prev => ({
                     ...prev,
-                    room_id: data[0].id,
-                    room_number: (data[0].site === 'Allada' && data[0].room_numbers?.length > 0) ? data[0].room_numbers[0] : ''
+                    room_id: filteredRooms[0].id,
+                    room_number: (filteredRooms[0].site === 'Allada' && filteredRooms[0].room_numbers?.length > 0) ? filteredRooms[0].room_numbers[0] : ''
                 }));
             } else {
                 setFormData(prev => ({ ...prev, room_id: '', room_number: '' }));
@@ -150,7 +179,7 @@ const StayForm = ({ client, userSite, onSave, onCancel }) => {
             if (clientUpdateError) throw clientUpdateError;
 
             // 2. Insert stay
-            const { error: insertError } = await supabase
+            const { data: stayData, error: insertError } = await supabase
                 .from('stays')
                 .insert([{
                     client_id: client.id,
@@ -170,22 +199,70 @@ const StayForm = ({ client, userSite, onSave, onCancel }) => {
                     phone: formData.phone,
                     email: formData.email,
                     status: 'active'
-                }]);
+                }])
+                .select()
+                .single();
 
             if (insertError) throw insertError;
 
-            // 3. Mark room as unavailable
-            const { error: roomUpdateError } = await supabase
-                .from('rooms')
-                .update({ is_available: false })
-                .eq('id', formData.room_id);
+            // 3. Mark room as unavailable (ONLY if not Allada, or if it was the last room - simplified to check if not Allada)
+            if (formData.site !== 'Allada') {
+                const { error: roomUpdateError } = await supabase
+                    .from('rooms')
+                    .update({ is_available: false })
+                    .eq('id', formData.room_id);
 
-            if (roomUpdateError) throw roomUpdateError;
+                if (roomUpdateError) throw roomUpdateError;
+            }
 
-            onSave();
+            // 4. Set active stay for the print preview which will handle PDF generation
+            setActiveStay({ ...stayData, rooms: rooms.find(r => r.id === formData.room_id) });
+            setSuccessMsg('Séjour créé avec succès ! Veuillez enregistrer la fiche PDF.');
+            setShowSuccess(true);
+
+            // We don't call onSave() yet because we want the user to see the success/print preview
         } catch (err) {
             console.error('Error creating stay:', err);
             setError(err.message || 'Erreur lors de la création du séjour.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handlePdfGenerated = async (blob) => {
+        if (!activeStay) return;
+
+        setLoading(true);
+        try {
+            const fileName = `${client.id}/${activeStay.id}_fiche.pdf`;
+
+            // Upload to storage
+            const { error: uploadError } = await supabase.storage
+                .from('registration-forms')
+                .upload(fileName, blob, {
+                    contentType: 'application/pdf',
+                    upsert: true
+                });
+
+            if (uploadError) throw uploadError;
+
+            // Get public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('registration-forms')
+                .getPublicUrl(fileName);
+
+            // Update stays record
+            const { error: updateError } = await supabase
+                .from('stays')
+                .update({ registration_form_url: publicUrl })
+                .eq('id', activeStay.id);
+
+            if (updateError) throw updateError;
+
+            console.log('PDF stored and linked successfully:', publicUrl);
+        } catch (err) {
+            console.error('Error uploading PDF:', err);
+            // Non-critical error, the stay is already created
         } finally {
             setLoading(false);
         }
@@ -221,15 +298,17 @@ const StayForm = ({ client, userSite, onSave, onCancel }) => {
                 throw new Error(`Erreur séjour: ${updateError.message}`);
             }
 
-            // 2. Mark room as available again
-            const { error: roomUpdateError } = await supabase
-                .from('rooms')
-                .update({ is_available: true })
-                .eq('id', activeStay.room_id);
+            // 2. Mark room as available again (ONLY if not Allada)
+            if (activeStay.site !== 'Allada') {
+                const { error: roomUpdateError } = await supabase
+                    .from('rooms')
+                    .update({ is_available: true })
+                    .eq('id', activeStay.room_id);
 
-            if (roomUpdateError) {
-                console.error('Room update error:', roomUpdateError);
-                throw new Error(`Erreur chambre: ${roomUpdateError.message}`);
+                if (roomUpdateError) {
+                    console.error('Room update error:', roomUpdateError);
+                    throw new Error(`Erreur chambre: ${roomUpdateError.message}`);
+                }
             }
 
             // 3. Add loyalty points to the client
@@ -279,14 +358,41 @@ const StayForm = ({ client, userSite, onSave, onCancel }) => {
                             <CheckCircle size={60} color="#10b981" style={{ margin: '0 auto' }} />
                         </div>
                         <h3 style={{ color: '#047857', marginBottom: '10px' }}>Félicitations !</h3>
-                        <p style={{ marginBottom: '25px', color: '#374151' }}>{successMsg}</p>
+                        <p style={{ marginBottom: '10px', color: '#374151' }}>{successMsg}</p>
+
+                        {activeStay?.registration_form_url && (
+                            <div style={{ marginBottom: '25px' }}>
+                                <a
+                                    href={activeStay.registration_form_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{ color: '#047857', fontWeight: 'bold', textDecoration: 'underline' }}
+                                >
+                                    Voir la fiche PDF enregistrée
+                                </a>
+                            </div>
+                        )}
+
                         <button
                             className="btn-primary"
-                            style={{ backgroundColor: '#10b981', width: '100%', padding: '12px' }}
-                            onClick={onSave}
+                            style={{ backgroundColor: '#10b981', width: '100%', padding: '12px', marginBottom: '10px' }}
+                            onClick={() => {
+                                // If the form is already generated, we can close
+                                onSave();
+                            }}
                         >
                             Terminer et Actualiser
                         </button>
+
+                        {!activeStay?.registration_form_url && (
+                            <button
+                                className="btn-secondary"
+                                style={{ width: '100%', padding: '12px' }}
+                                onClick={() => setShowPrintPreview(true)}
+                            >
+                                <FileDown size={18} style={{ marginRight: '8px' }} /> Générer/Enregistrer la fiche PDF
+                            </button>
+                        )}
                     </div>
                 ) : (
                     <>
@@ -345,6 +451,7 @@ const StayForm = ({ client, userSite, onSave, onCancel }) => {
                                         client={client}
                                         stay={activeStay}
                                         onClose={() => setShowPrintPreview(false)}
+                                        onPdfGenerated={handlePdfGenerated}
                                     />
                                 )}
                             </div>

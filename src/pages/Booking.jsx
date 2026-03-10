@@ -85,13 +85,50 @@ const Booking = () => {
     const fetchRooms = async () => {
         setLoading(true);
         try {
-            const { data, error } = await supabase.from('rooms').select('*').eq('is_available', true);
+            // 1. Fetch available rooms
+            const { data: roomsData, error: roomsError } = await supabase.from('rooms').select('*').eq('is_available', true);
 
-            if (error || !data || data.length === 0) {
+            if (roomsError) throw roomsError;
+
+            let occupiedNumbers = [];
+            // 2. If dates are provided, fetch occupied room numbers for Allada
+            if (initialCheckIn && initialCheckOut && initialSite === SITES.ALLADA) {
+                const { data: stays, error: staysError } = await supabase
+                    .from('stays')
+                    .select('room_number')
+                    .eq('site', 'Allada')
+                    .lt('check_in', initialCheckOut)
+                    .gt('check_out', initialCheckIn)
+                    .neq('status', 'cancelled');
+
+                const { data: reservations, error: reservationsError } = await supabase
+                    .from('reservations')
+                    .select('room_number')
+                    .eq('site', 'Allada')
+                    .lt('check_in', initialCheckOut)
+                    .gt('check_out', initialCheckIn)
+                    .neq('status', 'cancelled');
+
+                if (!staysError && stays) occupiedNumbers = [...occupiedNumbers, ...stays.map(s => s.room_number)];
+                if (!reservationsError && reservations) occupiedNumbers = [...occupiedNumbers, ...reservations.map(r => r.room_number)];
+            }
+
+            // 3. Filter rooms data (especially for Allada)
+            const processedRooms = (roomsData || []).map(room => {
+                if (room.site === 'Allada' && room.room_numbers) {
+                    return {
+                        ...room,
+                        room_numbers: room.room_numbers.filter(num => !occupiedNumbers.includes(num))
+                    };
+                }
+                return room;
+            }).filter(room => room.site !== 'Allada' || !room.room_numbers || room.room_numbers.length > 0);
+
+            if (processedRooms.length === 0 && (!roomsData || roomsData.length === 0)) {
                 console.log('Using mock data for booking page');
                 setRooms(MOCK_ROOMS);
             } else {
-                setRooms(data);
+                setRooms(processedRooms);
             }
         } catch (err) {
             console.error('Error fetching rooms for booking, using mock data:', err);
@@ -99,7 +136,10 @@ const Booking = () => {
         } finally {
             if (initialRoomId) {
                 setBookingData(prev => {
-                    const room = filteredRooms.find(r => r.id === initialRoomId);
+                    // Try to find in filteredRooms (which is updated by an effect)
+                    // But since filteredRooms is set in an effect depend on rooms, 
+                    // we might need to calculate price here using processedRooms/rooms directly or just wait for next render.
+                    // Given the existing code used filteredRooms, I will stick to a similar logic.
                     const price = calculateTotalPrice(initialRoomId, initialCheckIn, initialCheckOut);
                     return {
                         ...prev,

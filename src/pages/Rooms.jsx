@@ -37,12 +37,13 @@ const Rooms = () => {
             const checkOut = searchParams.get('checkOut');
 
             let occupiedRoomIds = [];
+            let occupiedRoomNumbers = [];
 
             if (checkIn && checkOut) {
                 // Fetch occupied rooms from stays
                 const { data: stays, error: staysError } = await supabase
                     .from('stays')
-                    .select('room_id')
+                    .select('room_id, room_number, site')
                     .lt('check_in', checkOut)
                     .gt('check_out', checkIn)
                     .neq('status', 'cancelled');
@@ -50,40 +51,58 @@ const Rooms = () => {
                 // Fetch occupied rooms from reservations
                 const { data: reservations, error: reservationsError } = await supabase
                     .from('reservations')
-                    .select('room_id')
+                    .select('room_id, room_number, site')
                     .lt('check_in', checkOut)
                     .gt('check_out', checkIn)
                     .neq('status', 'cancelled');
 
                 if (!staysError && stays) {
                     occupiedRoomIds = [...occupiedRoomIds, ...stays.map(s => s.room_id)];
+                    if (activeSite === SITES.ALLADA) {
+                        occupiedRoomNumbers = [...occupiedRoomNumbers, ...stays.filter(s => s.site === 'Allada').map(s => s.room_number)];
+                    }
                 }
                 if (!reservationsError && reservations) {
                     occupiedRoomIds = [...occupiedRoomIds, ...reservations.map(r => r.room_id)];
+                    if (activeSite === SITES.ALLADA) {
+                        occupiedRoomNumbers = [...occupiedRoomNumbers, ...reservations.filter(r => r.site === 'Allada').map(r => r.room_number)];
+                    }
                 }
             }
 
             let query = supabase
                 .from('rooms')
-                .select('id, name, description, image, prices, price_per_night, site, order_index, room_images(url)')
+                .select('id, name, description, image, prices, price_per_night, site, order_index, room_numbers, room_images(url)')
                 .eq('site', activeSite);
 
-            if (occupiedRoomIds.length > 0) {
+            // For non-Allada sites or if no dates selected, we can still use room_id if appropriate, 
+            // but let's be more precise for Allada.
+            if (activeSite === SITES.ABOMEY_CALAVI && occupiedRoomIds.length > 0) {
                 query = query.not('id', 'in', `(${occupiedRoomIds.join(',')})`);
             }
 
             const { data, error } = await query.order('order_index', { ascending: true });
 
             if (error || !data || data.length === 0) {
-                console.log('Using mock data for site:', activeSite);
+                console.log('Using mock data or no data found for site:', activeSite);
                 let filteredMock = MOCK_ROOMS.filter(r => r.site === activeSite);
-
-                // Manual overlap filter for mock data (optional but good for consistency)
-                // Note: MOCK_ROOMS don't have stays associated, so this is mostly relevant for database data.
-
                 setRooms(filteredMock);
             } else {
-                setRooms(data);
+                let finalRooms = data;
+
+                // For Allada, filter by room_number availability
+                if (activeSite === SITES.ALLADA && occupiedRoomNumbers.length > 0) {
+                    finalRooms = data.filter(room => {
+                        if (room.room_numbers && room.room_numbers.length > 0) {
+                            // Category is available if at least one of its room numbers is not occupied
+                            return room.room_numbers.some(num => !occupiedRoomNumbers.includes(num));
+                        }
+                        // Default to room_id check if no room_numbers listed
+                        return !occupiedRoomIds.includes(room.id);
+                    });
+                }
+
+                setRooms(finalRooms);
             }
         } catch (err) {
             console.error('Error fetching rooms, falling back to mock data:', err);

@@ -1,11 +1,46 @@
-import React from 'react';
-import { X, Printer } from 'lucide-react';
+import React, { useRef } from 'react';
+import { X, Printer, FileDown, Loader2 } from 'lucide-react';
+import html2pdf from 'html2pdf.js';
 
-const RegistrationFormPrint = ({ client, stay, onClose }) => {
+const RegistrationFormPrint = ({ client, stay, onClose, onPdfGenerated }) => {
+    const formRef = useRef();
+    const [isGenerating, setIsGenerating] = React.useState(false);
+
     if (!client || !stay) return null;
 
     const handlePrint = () => {
         window.print();
+    };
+
+    const handleDownloadPDF = async () => {
+        setIsGenerating(true);
+        try {
+            const element = formRef.current;
+            const opt = {
+                margin: 0,
+                filename: `Fiche_${client.last_name}_${stay.id.substring(0, 8)}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, logging: false },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // New approach: generate blob for potential upload AND download
+            const worker = html2pdf().from(element).set(opt);
+
+            // Download for user immediately as requested
+            await worker.save();
+
+            // If parent provided callback, send the blob
+            if (onPdfGenerated) {
+                const pdfBlob = await worker.output('blob');
+                onPdfGenerated(pdfBlob);
+            }
+        } catch (err) {
+            console.error('PDF Generation Error:', err);
+            alert('Erreur lors de la génération du PDF');
+        } finally {
+            setIsGenerating(false);
+        }
     };
 
     return (
@@ -37,6 +72,26 @@ const RegistrationFormPrint = ({ client, stay, onClose }) => {
                 zIndex: 100
             }}>
                 <button
+                    onClick={handleDownloadPDF}
+                    disabled={isGenerating}
+                    style={{
+                        backgroundColor: '#3b82f6',
+                        color: 'white',
+                        border: 'none',
+                        padding: '10px 20px',
+                        borderRadius: '8px',
+                        cursor: isGenerating ? 'not-allowed' : 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        fontWeight: '600',
+                        boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
+                    }}
+                >
+                    {isGenerating ? <Loader2 size={18} className="animate-spin" /> : <FileDown size={18} />}
+                    {isGenerating ? 'Génération...' : 'Enregistrer en PDF'}
+                </button>
+                <button
                     onClick={handlePrint}
                     style={{
                         backgroundColor: '#10b981',
@@ -52,7 +107,7 @@ const RegistrationFormPrint = ({ client, stay, onClose }) => {
                         boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
                     }}
                 >
-                    <Printer size={18} /> Lancer l'impression
+                    <Printer size={18} /> Imprimer
                 </button>
                 <button
                     onClick={onClose}
@@ -75,7 +130,7 @@ const RegistrationFormPrint = ({ client, stay, onClose }) => {
             </div>
 
             {/* The Actual Form Paper - Optimized for A4 */}
-            <div className="registration-print-container" style={{
+            <div className="registration-print-container" ref={formRef} style={{
                 width: '100%',
                 maxWidth: '800px',
                 backgroundColor: '#fff',
