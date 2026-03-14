@@ -251,18 +251,35 @@ const Dashboard = () => {
     };
 
     const handleUpdateStatus = async (id, status) => {
-        await supabase.from('reservations').update({ status }).eq('id', id);
+        const res = reservations.find(r => r.id === id);
+        const { error } = await supabase.from('reservations').update({ status }).eq('id', id);
+        
+        if (!error && res && res.site !== 'Allada' && res.room_id) {
+            // If confirmed, block the room. If cancelled, free it.
+            const shouldBeAvailable = status === 'cancelled';
+            if (status === 'confirmed' || status === 'cancelled') {
+                await supabase.from('rooms').update({ is_available: shouldBeAvailable }).eq('id', res.room_id);
+            }
+        }
+        
         fetchReservations();
+        if (activeTab === 'rooms') fetchRooms();
     };
 
     const handleDeleteReservation = async (id) => {
+        const res = reservations.find(r => r.id === id);
         if (window.confirm('Voulez-vous vraiment supprimer cette réservation ?')) {
             const { error } = await supabase.from('reservations').delete().eq('id', id);
             if (error) {
                 console.error('Delete Reservation Error:', error);
                 alert('Erreur lors de la suppression de la réservation.');
             } else {
+                // If it was blocking a room, free it (except Allada which uses manual room numbers)
+                if (res && res.site !== 'Allada' && res.room_id && res.status !== 'cancelled') {
+                    await supabase.from('rooms').update({ is_available: true }).eq('id', res.room_id);
+                }
                 fetchReservations();
+                if (activeTab === 'rooms') fetchRooms();
             }
         }
     };
