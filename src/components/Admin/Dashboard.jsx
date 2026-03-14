@@ -255,6 +255,18 @@ const Dashboard = () => {
         fetchReservations();
     };
 
+    const handleDeleteReservation = async (id) => {
+        if (window.confirm('Voulez-vous vraiment supprimer cette réservation ?')) {
+            const { error } = await supabase.from('reservations').delete().eq('id', id);
+            if (error) {
+                console.error('Delete Reservation Error:', error);
+                alert('Erreur lors de la suppression de la réservation.');
+            } else {
+                fetchReservations();
+            }
+        }
+    };
+
     const handleLogout = async () => {
         await supabase.auth.signOut();
         setUser(null);
@@ -684,6 +696,7 @@ const Dashboard = () => {
                                             <td><span className={`status ${res.status}`}>{res.status}</span></td>
                                             <td className="actions">
                                                 <button className="edit-btn" title="Voir les détails" onClick={() => setViewingReservation(res)}><Eye size={16} /></button>
+                                                <button className="delete-btn" title="Supprimer" onClick={() => handleDeleteReservation(res.id)}><Trash2 size={16} /></button>
                                                 <select
                                                     className="status-select"
                                                     value={res.status}
