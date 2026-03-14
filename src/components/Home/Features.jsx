@@ -16,7 +16,7 @@ const Features = () => {
                 </div>
                 <div className="feature-image animate-up">
                     <img
-                        src="/Images/73eec850-7b1e-4fba-b0b2-e318ecb4442c.jpg"
+                        src="/Images/Espacevert1.jpg"
                         alt="Jardin"
                         loading="lazy"
                         width="600"
