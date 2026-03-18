@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { X } from 'lucide-react';
 
-const ClientForm = ({ client, onSave, onCancel }) => {
+const ClientForm = ({ client, onSave, onCancel, userSite, userRole }) => {
     const [formData, setFormData] = useState({
-        site: '',
+        site: client ? client.site : (userSite || ''),
         unique_client_id: '',
         first_name: '',
         last_name: '',
@@ -87,9 +87,11 @@ const ClientForm = ({ client, onSave, onCancel }) => {
 
                     {/* Selection du Site */}
                     <div style={{ padding: '15px', backgroundColor: '#eff6ff', borderRadius: '8px', marginBottom: '1.5rem', border: '1px solid #bfdbfe' }}>
-                        <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '10px' }}>Site <span style={{ color: 'red' }}>*</span></label>
+                        <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '10px' }}>
+                            Site {userRole === 'reception' && <span style={{ fontSize: '0.8rem', fontWeight: 'normal', color: '#666' }}>(Fixé par votre profil)</span>} <span style={{ color: 'red' }}>*</span>
+                        </label>
                         <div style={{ display: 'flex', gap: '2rem' }}>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: userRole === 'reception' ? 'not-allowed' : 'pointer', opacity: userRole === 'reception' && formData.site !== 'Abomey-Calavi' ? 0.5 : 1 }}>
                                 <input
                                     type="radio"
                                     name="site"
@@ -97,11 +99,11 @@ const ClientForm = ({ client, onSave, onCancel }) => {
                                     checked={formData.site === 'Abomey-Calavi'}
                                     onChange={handleChange}
                                     required={!client}
-                                    disabled={!!client}
+                                    disabled={!!client || userRole === 'reception'}
                                 />
                                 Site d'Abomey Calavi
                             </label>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: userRole === 'reception' ? 'not-allowed' : 'pointer', opacity: userRole === 'reception' && formData.site !== 'Allada' ? 0.5 : 1 }}>
                                 <input
                                     type="radio"
                                     name="site"
@@ -109,7 +111,7 @@ const ClientForm = ({ client, onSave, onCancel }) => {
                                     checked={formData.site === 'Allada'}
                                     onChange={handleChange}
                                     required={!client}
-                                    disabled={!!client}
+                                    disabled={!!client || userRole === 'reception'}
                                 />
                                 Site d'Allada
                             </label>

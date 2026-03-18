@@ -174,7 +174,11 @@ const Dashboard = () => {
     };
 
     const fetchClients = async () => {
-        const { data, error } = await supabase.from('clients').select('*').order('created_at', { ascending: false });
+        let query = supabase.from('clients').select('*');
+        if (userSite) {
+            query = query.eq('site', userSite);
+        }
+        const { data, error } = await query.order('created_at', { ascending: false });
         if (error) console.error('Fetch Clients Error:', error);
         setClients(data || []);
     };
@@ -336,6 +340,8 @@ const Dashboard = () => {
             {showClientForm && (
                 <ClientForm
                     client={editingClient}
+                    userSite={userSite}
+                    userRole={role}
                     onSave={() => { setShowClientForm(false); setEditingClient(null); fetchClients(); }}
                     onCancel={() => { setShowClientForm(false); setEditingClient(null); }}
                 />
